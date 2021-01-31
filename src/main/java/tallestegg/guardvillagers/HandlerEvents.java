@@ -1,6 +1,5 @@
 package tallestegg.guardvillagers;
 
-import net.minecraft.entity.EntityType;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.entity.ai.goal.HurtByTargetGoal;
@@ -18,7 +17,6 @@ import net.minecraft.entity.passive.CatEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.PolarBearEntity;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
-import net.minecraftforge.event.entity.living.PotionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
@@ -50,9 +48,10 @@ public class HandlerEvents {
 
         if (event.getEntity() instanceof AbstractVillagerEntity) {
             AbstractVillagerEntity villager = (AbstractVillagerEntity) event.getEntity();
-            if (GuardConfig.VillagersRunFromPolarBears) {
+            if (GuardConfig.VillagersRunFromPolarBears) 
                 villager.goalSelector.addGoal(2, new AvoidEntityGoal<>(villager, PolarBearEntity.class, 6.0F, 1.0D, 1.2D)); // common sense.
-            }
+            if (GuardConfig.WitchesVillager) 
+                villager.goalSelector.addGoal(2, new AvoidEntityGoal<>(villager, WitchEntity.class, 6.0F, 1.0D, 1.2D));
         }
 
         if (event.getEntity() instanceof VillagerEntity) {
