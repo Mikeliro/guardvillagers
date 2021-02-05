@@ -8,6 +8,8 @@ import net.minecraft.entity.monster.CreeperEntity;
 import net.minecraft.entity.monster.RavagerEntity;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.util.Hand;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.registries.ForgeRegistries;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
 
@@ -21,7 +23,7 @@ public class RaiseShieldGoal extends Goal {
 
     @Override
     public boolean shouldExecute() {
-        return guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard) && raiseShield() && guard.shieldCoolDown == 0;
+        return guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard) && raiseShield() && guard.shieldCoolDown == 0 && !guard.getHeldItemOffhand().getItem().equals(ForgeRegistries.ITEMS.getValue(new ResourceLocation("bigbrain:buckler")));
     }
 
     @Override
@@ -48,9 +50,10 @@ public class RaiseShieldGoal extends Goal {
 
     @Override
     public void resetTask() {
-        if (!GuardConfig.GuardAlwaysShield)
+        if (!GuardConfig.GuardAlwaysShield) {
             guard.resetActiveHand();
             guard.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.5D);
+        }
     }
 
     protected boolean raiseShield() {

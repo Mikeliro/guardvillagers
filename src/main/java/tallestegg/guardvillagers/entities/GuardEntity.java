@@ -71,6 +71,7 @@ import net.minecraft.item.MilkBucketItem;
 import net.minecraft.item.PotionItem;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.item.ShootableItem;
+import net.minecraft.item.SplashPotionItem;
 import net.minecraft.item.UseAction;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
@@ -81,7 +82,6 @@ import net.minecraft.particles.IParticleData;
 import net.minecraft.particles.ParticleTypes;
 import net.minecraft.pathfinding.GroundPathNavigator;
 import net.minecraft.potion.Effects;
-import net.minecraft.server.management.PreYggdrasilConverter;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
@@ -131,6 +131,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     public int kickTicks;
     public int shieldCoolDown;
     public int kickCoolDown;
+    public int bucklerCoolDown;
     private boolean eating;
     public boolean interacting;
     private boolean following;
@@ -347,7 +348,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     @Override
     protected void onItemUseFinish() {
         super.onItemUseFinish();
-        if (this.getHeldItemOffhand().getItem() instanceof PotionItem)
+        if (this.getHeldItemOffhand().getItem() instanceof PotionItem && this.getHeldItemOffhand().getItem() instanceof SplashPotionItem)
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.GLASS_BOTTLE));
         if (this.getHeldItemOffhand().getItem() instanceof MilkBucketItem)
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.BUCKET));
@@ -383,6 +384,9 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (this.getOwner() != null && !this.getOwner().isPotionActive(Effects.HERO_OF_THE_VILLAGE)) {
             this.setOwnerId(null); // TODO find a better method instead of checking every tick, use potion expiry event instead
         }
+        if (!this.world.isRemote) {
+            this.func_241359_a_((ServerWorld)this.world, true);
+         }
         this.updateArmSwingProgress();
         super.livingTick();
     }
@@ -547,6 +551,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                 return this.entity.getAttackTarget() == null && super.shouldContinueExecuting();
             }
         });
+        this.targetSelector.addGoal(1, new GuardEntity.DefendVillageGuardGoal(this));
         if (!GuardConfig.GuardSurrender) {
             this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, RavagerEntity.class, true));
         }
@@ -574,7 +579,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, ZombieEntity.class, true));
         this.targetSelector.addGoal(4, new ResetAngerGoal<>(this, false));
         this.targetSelector.addGoal(5, new HelpVillagerGoal(this));
-        this.targetSelector.addGoal(6, new GuardEntity.DefendVillageGuardGoal(this));
     }
 
     @Override
