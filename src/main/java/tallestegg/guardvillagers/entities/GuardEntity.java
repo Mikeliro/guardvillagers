@@ -131,11 +131,9 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     public int kickTicks;
     public int shieldCoolDown;
     public int kickCoolDown;
-    public int bucklerCoolDown;
     private boolean eating;
     public boolean interacting;
     private boolean following;
-    public int coolDown;
     private int field_234197_bv_;
     private static final RangedInteger field_234196_bu_ = TickRangeConverter.convertRange(20, 39);
     private UUID field_234198_bw_;
@@ -223,7 +221,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.following = compound.getBoolean("Following");
         this.interacting = compound.getBoolean("Interacting");
         this.setEating(compound.getBoolean("Eating"));
-        this.coolDown = compound.getInt("Cooldown");
         this.shieldCoolDown = compound.getInt("KickCooldown");
         this.kickCoolDown = compound.getInt("ShieldCooldown");
         ListNBT listnbt = compound.getList("Inventory", 10);
@@ -254,7 +251,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         super.writeAdditional(compound);
         compound.putInt("Type", this.getGuardVariant());
         compound.putInt("KickTicks", this.kickTicks);
-        compound.putInt("Cooldown", this.coolDown);
         compound.putInt("ShieldCooldown", this.shieldCoolDown);
         compound.putInt("KickCooldown", this.kickCoolDown);
         compound.putBoolean("Following", this.following);
@@ -370,10 +366,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     public void livingTick() {
         if (this.kickTicks > 0) {
             --this.kickTicks;
-        }
-
-        if (this.coolDown > 0) {
-            --this.coolDown;
         }
         if (this.kickCoolDown > 0) {
             --this.kickCoolDown;
@@ -717,7 +709,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     protected ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
-        if (this.isServerWorld() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && this.getAttackTarget() != player && this.onGround) {
+        if (!player.isCrouching() && this.isServerWorld() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && this.getAttackTarget() != player && this.onGround) {
             this.openGui((ServerPlayerEntity) player);
             return ActionResultType.func_233537_a_(this.world.isRemote);
         }
