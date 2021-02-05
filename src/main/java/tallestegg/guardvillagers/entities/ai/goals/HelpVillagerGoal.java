@@ -20,7 +20,7 @@ public class HelpVillagerGoal extends TargetGoal {
     }
 
     public boolean shouldExecute() {
-        List<MobEntity> list = this.goalOwner.world.getEntitiesWithinAABB(MobEntity.class, this.goalOwner.getBoundingBox().grow((double) 100.0D));
+        List<MobEntity> list = this.goalOwner.world.getEntitiesWithinAABB(MobEntity.class, this.goalOwner.getBoundingBox().grow(50.0D));
 
         for (MobEntity entity : list) {
             LivingEntity attackTarget = entity.getAttackTarget();
