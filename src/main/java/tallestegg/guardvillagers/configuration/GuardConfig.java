@@ -36,6 +36,9 @@ public class GuardConfig {
     public static boolean ConvertVillagerIfHaveHOTV;
     public static boolean BlackSmithHealing;
     public static boolean ClericHealing;
+    public static Double GuardHealth;
+    public static Double GuardFollowRange;
+    public static Double GuardSpeed;
     public static Double GuardVillagerHelpRange;
     public static List<String> MobBlackList;
 
@@ -56,6 +59,9 @@ public class GuardConfig {
         BlackSmithHealing = COMMON.BlacksmithHealing.get();
         ClericHealing = COMMON.ClericHealing.get();
         GuardVillagerHelpRange = COMMON.GuardVillagerHelpRange.get();
+        GuardFollowRange = COMMON.GuardFollowRange.get();
+        GuardHealth = COMMON.GuardHealth.get();
+        GuardSpeed = COMMON.GuardSpeed.get();
     }
 
     @SubscribeEvent
@@ -82,6 +88,9 @@ public class GuardConfig {
         public final ForgeConfigSpec.BooleanValue BlacksmithHealing;
         public final ForgeConfigSpec.BooleanValue ClericHealing;
         public final ForgeConfigSpec.DoubleValue GuardVillagerHelpRange;
+        public final ForgeConfigSpec.DoubleValue GuardHealth;
+        public final ForgeConfigSpec.DoubleValue GuardSpeed;
+        public final ForgeConfigSpec.DoubleValue GuardFollowRange;
         public final ForgeConfigSpec.ConfigValue<List<String>> MobBlackList;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
@@ -95,14 +104,16 @@ public class GuardConfig {
             IllagersRunFromPolarBears = builder.comment("This makes Illagers run from polar bears, as anyone with common sense would.").translation(GuardVillagers.MODID + ".config.IllagersRunFromPolarBears").define("Have Illagers have some common sense?", true);
             GuardsRunFromPolarBears = builder.comment("This makes Guards run from polar bears, as anyone with common sense would.").translation(GuardVillagers.MODID + ".config.IllagersRunFromPolarBears").define("Have Guards have some common sense?", false);
             GuardsOpenDoors = builder.comment("This lets Guards open doors.").translation(GuardVillagers.MODID + ".config.GuardsOpenDoors").define("Have Guards open doors?", true);
-            GuardRaiseShield = builder.comment("This will make guards raise their shields all the time, on default they will only raise their shields under certain conditions").translation(GuardVillagers.MODID + ".config.GuardRaiseShield").define("Have Guards raise their shield all the time?",
-                    false);
+            GuardRaiseShield = builder.comment("This will make guards raise their shields all the time, on default they will only raise their shields under certain conditions").translation(GuardVillagers.MODID + ".config.GuardRaiseShield").define("Have Guards raise their shield all the time?", false);
             GuardFormation = builder.comment("This makes guards form a phalanx").translation(GuardVillagers.MODID + ".config.GuardFormation").define("Have guards form a phalanx?", true);
             FriendlyFire = builder.comment("This will make guards attempt to avoid friendly fire.").translation(GuardVillagers.MODID + ".config.FriendlyFire").define("Have guards avoid friendly fire? (Experimental)", false);
             ConvertVillagerIfHaveHOTV = builder.comment("This will make it so villagers will only be converted into guards if the player has hero of the village").translation(GuardVillagers.MODID + ".config.hotv").define("Make it so players have to have hero of the village to convert villagers into guards?", false);
             BlacksmithHealing = builder.translation(GuardVillagers.MODID + ".config.blacksmith").define("Have it so blacksmiths heal golems under 60 health?", true);
             ClericHealing = builder.translation(GuardVillagers.MODID + ".config.cleric").define("Have it so clerics heal guards and players with hero of the village?", true);
             GuardVillagerHelpRange = builder.translation(GuardVillagers.MODID + ".config.range").comment("This is the range in which the guards will be aggroed to mobs that are attacking villagers. Higher values are more resource intensive, and setting this to zero will disable the goal.").defineInRange("Range", 10.0D, -500.0D, 500.0D);
+            GuardHealth = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("Guard Health", 20.0D, -500.0D, 500.0D);
+            GuardSpeed = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("Guard speed", 0.5D, -500.0D, 500.0D);
+            GuardFollowRange = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("Guard follow range", 25.0D, -500.0D, 500.0D);
         }
     }
 }

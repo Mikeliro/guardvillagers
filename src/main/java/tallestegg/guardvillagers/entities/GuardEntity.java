@@ -479,37 +479,37 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (this.rand.nextFloat() < 0.15F) {
             int value = this.rand.nextInt(2);
             if (this.rand.nextFloat() < 0.095F) {
-               ++value;
+                ++value;
             }
 
             if (this.rand.nextFloat() < 0.095F) {
-               ++value;
+                ++value;
             }
 
             if (this.rand.nextFloat() < 0.095F) {
-               ++value;
+                ++value;
             }
 
             boolean flag = true;
 
-            for(EquipmentSlotType equipmentslottype : EquipmentSlotType.values()) {
-               if (equipmentslottype.getSlotType() == EquipmentSlotType.Group.ARMOR) {
-                  ItemStack itemstack = this.getItemStackFromSlot(equipmentslottype);
-                  if (!flag && this.rand.nextFloat() < 0.20F) {
-                     break;
-                  }
+            for (EquipmentSlotType equipmentslottype : EquipmentSlotType.values()) {
+                if (equipmentslottype.getSlotType() == EquipmentSlotType.Group.ARMOR) {
+                    ItemStack itemstack = this.getItemStackFromSlot(equipmentslottype);
+                    if (!flag && this.rand.nextFloat() < 0.20F) {
+                        break;
+                    }
 
-                  flag = false;
-                  if (itemstack.isEmpty()) {
-                     Item item = getArmorByChance(equipmentslottype, value);
-                     if (item != null) {
-                        this.setItemStackToSlot(equipmentslottype, new ItemStack(item));
-                     }
-                  }
-               }
+                    flag = false;
+                    if (itemstack.isEmpty()) {
+                        Item item = getArmorByChance(equipmentslottype, value);
+                        if (item != null) {
+                            this.setItemStackToSlot(equipmentslottype, new ItemStack(item));
+                        }
+                    }
+                }
             }
         }
-            
+
     }
 
     public int getGuardVariant() {
@@ -592,9 +592,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractIllagerEntity.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractRaiderEntity.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IllusionerEntity.class, true));
-        if (GuardConfig.AttackAllMobs)
-
-        {
+        if (GuardConfig.AttackAllMobs) {
             this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, MobEntity.class, 5, true, true, (mob) -> {
                 return mob instanceof IMob && !GuardConfig.MobBlackList.contains(mob.getEntityString());
             }));
