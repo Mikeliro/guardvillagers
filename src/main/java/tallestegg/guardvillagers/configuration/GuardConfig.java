@@ -29,7 +29,6 @@ public class GuardConfig {
     public static boolean VillagersRunFromPolarBears;
     public static boolean IllagersRunFromPolarBears;
     public static boolean GuardsRunFromPolarBears;
-    public static boolean IllagersOpenDoors;
     public static boolean GuardsOpenDoors;
     public static boolean GuardAlwaysShield;
     public static boolean GuardFormation;
@@ -37,6 +36,7 @@ public class GuardConfig {
     public static boolean ConvertVillagerIfHaveHOTV;
     public static boolean BlackSmithHealing;
     public static boolean ClericHealing;
+    public static Double GuardVillagerHelpRange;
     public static List<String> MobBlackList;
 
     public static void bakeConfig() {
@@ -55,6 +55,7 @@ public class GuardConfig {
         ConvertVillagerIfHaveHOTV = COMMON.ConvertVillagerIfHaveHOTV.get();
         BlackSmithHealing = COMMON.BlacksmithHealing.get();
         ClericHealing = COMMON.ClericHealing.get();
+        GuardVillagerHelpRange = COMMON.GuardVillagerHelpRange.get();
     }
 
     @SubscribeEvent
@@ -65,7 +66,6 @@ public class GuardConfig {
     }
 
     public static class CommonConfig {
-
         public final ForgeConfigSpec.BooleanValue RaidAnimals;
         public final ForgeConfigSpec.BooleanValue WitchesVillager;
         public final ForgeConfigSpec.BooleanValue IllusionerRaids;
@@ -81,6 +81,7 @@ public class GuardConfig {
         public final ForgeConfigSpec.BooleanValue ConvertVillagerIfHaveHOTV;
         public final ForgeConfigSpec.BooleanValue BlacksmithHealing;
         public final ForgeConfigSpec.BooleanValue ClericHealing;
+        public final ForgeConfigSpec.DoubleValue GuardVillagerHelpRange;
         public final ForgeConfigSpec.ConfigValue<List<String>> MobBlackList;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
@@ -101,6 +102,7 @@ public class GuardConfig {
             ConvertVillagerIfHaveHOTV = builder.comment("This will make it so villagers will only be converted into guards if the player has hero of the village").translation(GuardVillagers.MODID + ".config.hotv").define("Make it so players have to have hero of the village to convert villagers into guards?", false);
             BlacksmithHealing = builder.translation(GuardVillagers.MODID + ".config.blacksmith").define("Have it so blacksmiths heal golems under 60 health?", true);
             ClericHealing = builder.translation(GuardVillagers.MODID + ".config.cleric").define("Have it so clerics heal guards and players with hero of the village?", true);
+            GuardVillagerHelpRange = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("This determines the range in which the guards will be aggroed to mobs that are attacking villagers, higher numbers are resource intensive. Setting this to zero will disable the goal entirely.", 10.0D, -500.0D, 500.0D);
         }
     }
 }

@@ -3,11 +3,13 @@ package tallestegg.guardvillagers.entities.ai.goals;
 import java.util.EnumSet;
 import java.util.List;
 
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.TargetGoal;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
+import tallestegg.guardvillagers.configuration.GuardConfig;
 
 public class HelpVillagerGoal extends TargetGoal {
     protected final MobEntity mob;
@@ -20,11 +22,11 @@ public class HelpVillagerGoal extends TargetGoal {
     }
 
     public boolean shouldExecute() {
-        List<MobEntity> list = this.goalOwner.world.getEntitiesWithinAABB(MobEntity.class, this.goalOwner.getBoundingBox().grow(50.0D));
+        List<MobEntity> list = this.goalOwner.world.getEntitiesWithinAABB(MobEntity.class, this.goalOwner.getBoundingBox().grow(GuardConfig.GuardVillagerHelpRange));
 
         for (MobEntity entity : list) {
             LivingEntity attackTarget = entity.getAttackTarget();
-            if ((entity).getAttackTarget() instanceof VillagerEntity && entity.canEntityBeSeen(attackTarget)) {
+            if (entity.getAttackTarget().getType() == EntityType.VILLAGER && entity.canEntityBeSeen(attackTarget)) {
                 this.villageAggressorTarget = entity;
             }
         }
@@ -38,7 +40,7 @@ public class HelpVillagerGoal extends TargetGoal {
 
     @Override
     protected double getTargetDistance() {
-        return villageAggressorTarget.getDistance(goalOwner) + 10.0F; // broadcasts location
+        return villageAggressorTarget.getDistance(goalOwner) + 10.0D; // broadcasts location
     }
 
     @Override

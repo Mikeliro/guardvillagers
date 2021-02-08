@@ -65,6 +65,7 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
+import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.MilkBucketItem;
@@ -374,11 +375,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             --this.shieldCoolDown;
         }
         if (this.getOwner() != null && !this.getOwner().isPotionActive(Effects.HERO_OF_THE_VILLAGE)) {
-            this.setOwnerId(null); // TODO find a better method instead of checking every tick, use potion expiry event instead
+            this.setOwnerId(null); // TODO find a better method instead of checking every tick, using potion expiry
+                                   // event instead
         }
         if (!this.world.isRemote) {
-            this.func_241359_a_((ServerWorld)this.world, true);
-         }
+            this.func_241359_a_((ServerWorld) this.world, true);
+        }
         this.updateArmSwingProgress();
         super.livingTick();
     }
@@ -417,7 +419,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                     } else {
                         this.setItemStackToSlot(EquipmentSlotType.OFFHAND, ItemStack.EMPTY);
                     }
-
                     this.activeItemStack = ItemStack.EMPTY;
                     this.playSound(SoundEvents.ITEM_SHIELD_BREAK, 0.8F, 0.8F + this.world.rand.nextFloat() * 0.4F);
                 }
@@ -475,7 +476,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         }// no more funky if statements
         this.inventoryHandsDropChances[EquipmentSlotType.MAINHAND.getIndex()] = 100.0F;
         this.inventoryHandsDropChances[EquipmentSlotType.OFFHAND.getIndex()] = 100.0F;
-        super.setEquipmentBasedOnDifficulty(difficulty); // so guards can spawn with armor
+        super.setEquipmentBasedOnDifficulty(difficulty);
     }
 
     public int getGuardVariant() {
@@ -528,6 +529,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.goalSelector.addGoal(3, new MoveThroughVillageGoal(this, 0.6D, false, 4, () -> false));
         if (GuardConfig.GuardsOpenDoors) {
             this.goalSelector.addGoal(3, new OpenDoorGoal(this, true) {
+
                 @Override
                 public void startExecuting() {
                     super.startExecuting();
@@ -537,12 +539,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         }
         this.goalSelector.addGoal(8, new LookAtGoal(this, AbstractVillagerEntity.class, 8.0F));
         this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.6D));
-        this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F) {
-            @Override
-            public boolean shouldContinueExecuting() {
-                return this.entity.getAttackTarget() == null && super.shouldContinueExecuting();
-            }
-        });
+        this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));
         this.targetSelector.addGoal(1, new GuardEntity.DefendVillageGuardGoal(this));
         if (!GuardConfig.GuardSurrender) {
             this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, RavagerEntity.class, true));
@@ -562,7 +559,9 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractIllagerEntity.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractRaiderEntity.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IllusionerEntity.class, true));
-        if (GuardConfig.AttackAllMobs) {
+        if (GuardConfig.AttackAllMobs)
+
+        {
             this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, MobEntity.class, 5, true, true, (mob) -> {
                 return mob instanceof IMob && !GuardConfig.MobBlackList.contains(mob.getEntityString());
             }));
@@ -570,7 +569,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::func_233680_b_));
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, ZombieEntity.class, true));
         this.targetSelector.addGoal(4, new ResetAngerGoal<>(this, false));
-        this.targetSelector.addGoal(5, new HelpVillagerGoal(this));
+        if (GuardConfig.GuardVillagerHelpRange > 0.0D)
+            this.targetSelector.addGoal(5, new HelpVillagerGoal(this));
     }
 
     @Override
@@ -804,7 +804,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (p_241841_1_.getDifficulty() != Difficulty.PEACEFUL) {
             LOGGER.info("Guard {} was struck by lightning {}.", this, p_241841_2_);
             WitchEntity witchentity = EntityType.WITCH.create(p_241841_1_);
-            if (witchentity == null) return;
+            if (witchentity == null)
+                return;
             witchentity.copyLocationAndAnglesFrom(this);
             witchentity.onInitialSpawn(p_241841_1_, p_241841_1_.getDifficultyForLocation(witchentity.getPosition()), SpawnReason.CONVERSION, null, null);
             witchentity.setNoAI(this.isAIDisabled());
