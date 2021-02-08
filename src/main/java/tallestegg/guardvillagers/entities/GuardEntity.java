@@ -345,7 +345,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     @Override
     protected void onItemUseFinish() {
         super.onItemUseFinish();
-        if (this.getHeldItemOffhand().getItem() instanceof PotionItem && this.getHeldItemOffhand().getItem() instanceof SplashPotionItem)
+        if (this.getHeldItemOffhand().getItem() instanceof PotionItem && !(this.getHeldItemOffhand().getItem() instanceof SplashPotionItem))
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.GLASS_BOTTLE));
         if (this.getHeldItemOffhand().getItem() instanceof MilkBucketItem)
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.BUCKET));
@@ -476,7 +476,40 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         }// no more funky if statements
         this.inventoryHandsDropChances[EquipmentSlotType.MAINHAND.getIndex()] = 100.0F;
         this.inventoryHandsDropChances[EquipmentSlotType.OFFHAND.getIndex()] = 100.0F;
-        super.setEquipmentBasedOnDifficulty(difficulty);
+        if (this.rand.nextFloat() < 0.15F) {
+            int value = this.rand.nextInt(2);
+            if (this.rand.nextFloat() < 0.095F) {
+               ++value;
+            }
+
+            if (this.rand.nextFloat() < 0.095F) {
+               ++value;
+            }
+
+            if (this.rand.nextFloat() < 0.095F) {
+               ++value;
+            }
+
+            boolean flag = true;
+
+            for(EquipmentSlotType equipmentslottype : EquipmentSlotType.values()) {
+               if (equipmentslottype.getSlotType() == EquipmentSlotType.Group.ARMOR) {
+                  ItemStack itemstack = this.getItemStackFromSlot(equipmentslottype);
+                  if (!flag && this.rand.nextFloat() < 0.20F) {
+                     break;
+                  }
+
+                  flag = false;
+                  if (itemstack.isEmpty()) {
+                     Item item = getArmorByChance(equipmentslottype, value);
+                     if (item != null) {
+                        this.setItemStackToSlot(equipmentslottype, new ItemStack(item));
+                     }
+                  }
+               }
+            }
+        }
+            
     }
 
     public int getGuardVariant() {
@@ -802,7 +835,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     @Override
     public void func_241841_a(ServerWorld p_241841_1_, LightningBoltEntity p_241841_2_) {
         if (p_241841_1_.getDifficulty() != Difficulty.PEACEFUL) {
-            LOGGER.info("Guard {} was struck by lightning {}.", this, p_241841_2_);
             WitchEntity witchentity = EntityType.WITCH.create(p_241841_1_);
             if (witchentity == null)
                 return;

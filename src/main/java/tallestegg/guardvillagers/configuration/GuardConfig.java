@@ -102,7 +102,7 @@ public class GuardConfig {
             ConvertVillagerIfHaveHOTV = builder.comment("This will make it so villagers will only be converted into guards if the player has hero of the village").translation(GuardVillagers.MODID + ".config.hotv").define("Make it so players have to have hero of the village to convert villagers into guards?", false);
             BlacksmithHealing = builder.translation(GuardVillagers.MODID + ".config.blacksmith").define("Have it so blacksmiths heal golems under 60 health?", true);
             ClericHealing = builder.translation(GuardVillagers.MODID + ".config.cleric").define("Have it so clerics heal guards and players with hero of the village?", true);
-            GuardVillagerHelpRange = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("This determines the range in which the guards will be aggroed to mobs that are attacking villagers, higher numbers are resource intensive. Setting this to zero will disable the goal entirely.", 10.0D, -500.0D, 500.0D);
+            GuardVillagerHelpRange = builder.translation(GuardVillagers.MODID + ".config.range").comment("This is the range in which the guards will be aggroed to mobs that are attacking villagers. Higher values are more resource intensive, and setting this to zero will disable the goal.").defineInRange("Range", 10.0D, -500.0D, 500.0D);
         }
     }
 }

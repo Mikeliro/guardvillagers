@@ -8,7 +8,6 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.TargetGoal;
-import net.minecraft.entity.merchant.villager.VillagerEntity;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 
 public class HelpVillagerGoal extends TargetGoal {
