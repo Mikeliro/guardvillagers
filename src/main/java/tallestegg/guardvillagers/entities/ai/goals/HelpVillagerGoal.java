@@ -25,6 +25,8 @@ public class HelpVillagerGoal extends TargetGoal {
 
         for (MobEntity entity : list) {
             LivingEntity attackTarget = entity.getAttackTarget();
+            if (attackTarget == null || entity == null)
+                return false;
             if (entity.getAttackTarget().getType() == EntityType.VILLAGER && entity.canEntityBeSeen(attackTarget)) {
                 this.villageAggressorTarget = entity;
             }
