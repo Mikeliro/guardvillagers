@@ -19,6 +19,7 @@ import net.minecraft.util.SoundEvents;
 public class HealGolemGoal extends Goal {
     public final MobEntity healer;
     public IronGolemEntity golem;
+    public boolean hasStartedHealing;
 
     public HealGolemGoal(MobEntity mob) {
         healer = mob;
@@ -35,9 +36,8 @@ public class HealGolemGoal extends Goal {
         if (!list.isEmpty()) {
             for (IronGolemEntity golem : list) {
                 if (!golem.isInvisible() && golem.getType() == EntityType.IRON_GOLEM) { // Check if the entity is an Iron Golem, not any other golem.
-                    if (golem.getHealth() <= 60.0F) {
+                    if (golem.getHealth() <= 60.0D || this.hasStartedHealing && golem.getHealth() < golem.getMaxHealth()) {
                         this.golem = golem;
-                        this.healGolem();
                         return true;
                     }
                 }
@@ -49,6 +49,7 @@ public class HealGolemGoal extends Goal {
     @Override
     public void resetTask() {
         healer.setItemStackToSlot(EquipmentSlotType.MAINHAND, ItemStack.EMPTY);
+        this.hasStartedHealing = false;
         super.resetTask();
     }
 
@@ -69,10 +70,12 @@ public class HealGolemGoal extends Goal {
     public void healGolem() {
         healer.getNavigator().tryMoveToEntityLiving(golem, 0.5);
         if (healer.getDistance(golem) <= 2.0D) {
+            this.hasStartedHealing = true;
             healer.setItemStackToSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.IRON_INGOT));
             healer.swingArm(Hand.MAIN_HAND);
             golem.heal(15.0F);
-            golem.playSound(SoundEvents.ENTITY_IRON_GOLEM_REPAIR, 1.0F, 1.0F);
+            float f1 = 1.0F + (golem.getRNG().nextFloat() - golem.getRNG().nextFloat()) * 0.2F;
+            golem.playSound(SoundEvents.ENTITY_IRON_GOLEM_REPAIR, 1.0F, f1);
         }
     }
 

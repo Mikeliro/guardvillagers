@@ -573,7 +573,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.goalSelector.addGoal(8, new LookAtGoal(this, AbstractVillagerEntity.class, 8.0F));
         this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.6D));
         this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));
-        this.targetSelector.addGoal(1, new GuardEntity.DefendVillageGuardGoal(this));
+        this.targetSelector.addGoal(0, new GuardEntity.DefendVillageGuardGoal(this));
         if (!GuardConfig.GuardSurrender) {
             this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, RavagerEntity.class, true));
         }
