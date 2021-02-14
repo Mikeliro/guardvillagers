@@ -10,9 +10,11 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.Pose;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.projectile.ProjectileHelper;
+import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
+import tallestegg.guardvillagers.GuardItems;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
 
@@ -64,7 +66,7 @@ public class RangedCrossbowAttackPassiveGoal<T extends CreatureEntity & IRangedA
 
     // maybe?
     public boolean checkFriendlyFire() {
-        List<GuardEntity> list = this.entity.world.getEntitiesWithinAABB(GuardEntity.class, this.entity.getBoundingBox().grow(10.0D));
+        List<GuardEntity> list = this.entity.world.getEntitiesWithinAABB(GuardEntity.class, this.entity.getBoundingBox().grow(4.0D));
         for (GuardEntity guard : list) {
             if (entity.getEntitySenses().canSee(guard) && entity != guard && !guard.isInvisible() && GuardConfig.FriendlyFire) {
                 return true;
@@ -101,7 +103,7 @@ public class RangedCrossbowAttackPassiveGoal<T extends CreatureEntity & IRangedA
             // makes the entity that has this goal backup if the attack target is 5 blocks
             // infront of them.
             if (d1 <= 5.0D) {
-                this.entity.getMoveHelper().strafe(-6.0F, 0);
+                this.entity.getMoveHelper().strafe(-3.0F, 0);
                 this.entity.faceEntity(livingentity, 30.0F, 30.0F);
             }
 
@@ -116,7 +118,7 @@ public class RangedCrossbowAttackPassiveGoal<T extends CreatureEntity & IRangedA
             this.entity.getLookController().setLookPositionWithEntity(livingentity, 30.0F, 30.0F);
             if (this.field_220749_b == RangedCrossbowAttackPassiveGoal.CrossbowState.UNCHARGED && !CrossbowItem.isCharged(entity.getActiveItemStack())) {
                 if (flag) {
-                    this.entity.setActiveHand(ProjectileHelper.getHandWith(this.entity, Items.CROSSBOW));
+                    this.entity.setActiveHand(GuardItems.getHandWith(entity, item -> item instanceof CrossbowItem));
                     this.field_220749_b = RangedCrossbowAttackPassiveGoal.CrossbowState.CHARGING;
                     ((ICrossbowUser) this.entity).setCharging(true);
                 }
@@ -140,7 +142,7 @@ public class RangedCrossbowAttackPassiveGoal<T extends CreatureEntity & IRangedA
                 }
             } else if (this.field_220749_b == RangedCrossbowAttackPassiveGoal.CrossbowState.READY_TO_ATTACK && flag && !checkFriendlyFire()) {
                 ((IRangedAttackMob) this.entity).attackEntityWithRangedAttack(livingentity, 1.0F);
-                ItemStack itemstack1 = this.entity.getHeldItem(ProjectileHelper.getHandWith(this.entity, Items.CROSSBOW));
+                ItemStack itemstack1 = this.entity.getHeldItem(GuardItems.getHandWith(entity, item -> item instanceof CrossbowItem));
                 CrossbowItem.setCharged(itemstack1, false);
                 this.field_220749_b = RangedCrossbowAttackPassiveGoal.CrossbowState.UNCHARGED;
             }

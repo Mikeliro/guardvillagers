@@ -7,7 +7,9 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.projectile.ProjectileHelper;
 import net.minecraft.item.BowItem;
+import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.Items;
+import tallestegg.guardvillagers.GuardItems;
 import tallestegg.guardvillagers.entities.GuardEntity;
 
 public class RangedBowAttackPassiveGoal<T extends GuardEntity & IRangedAttackMob> extends Goal {
@@ -136,7 +138,7 @@ public class RangedBowAttackPassiveGoal<T extends GuardEntity & IRangedAttackMob
                     }
                 }
             } else if (--this.attackTime <= 0 && this.seeTime >= -60) {
-                this.entity.setActiveHand(ProjectileHelper.getHandWith(this.entity, Items.BOW));
+                this.entity.setActiveHand(GuardItems.getHandWith(entity, item -> item instanceof BowItem));
             }
 
         }

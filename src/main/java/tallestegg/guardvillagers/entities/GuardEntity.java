@@ -609,7 +609,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (this.getHeldItemMainhand().getItem() instanceof CrossbowItem)
             this.func_234281_b_(this, 6.0F);
         if (this.getHeldItemMainhand().getItem() instanceof BowItem) {
-            ItemStack itemstack = this.findAmmo(this.getHeldItem(ProjectileHelper.getHandWith(this, Items.BOW)));
+            ItemStack itemstack = this.findAmmo(this.getHeldItem(GuardItems.getHandWith(this, item -> item instanceof BowItem)));
             ItemStack hand = this.getHeldItemMainhand();
             hand.damageItem(1, this, (entity) -> entity.sendBreakAnimation(EquipmentSlotType.MAINHAND));
             AbstractArrowEntity abstractarrowentity = ProjectileHelper.fireArrow(this, itemstack, distanceFactor);
