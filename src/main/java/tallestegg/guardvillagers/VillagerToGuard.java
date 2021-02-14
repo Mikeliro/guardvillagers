@@ -11,6 +11,7 @@ import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
 import net.minecraft.potion.Effects;
+import net.minecraft.util.Hand;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -40,19 +41,19 @@ public class VillagerToGuard {
     }
 
     private void convertVillager(LivingEntity entity, PlayerEntity player) {
+        player.swingArm(Hand.MAIN_HAND);
         ItemStack itemstack = player.getItemStackFromSlot(EquipmentSlotType.MAINHAND);
         GuardEntity guard = GuardEntityType.GUARD.get().create(entity.world);
         VillagerEntity villager = (VillagerEntity) entity;
-        if (guard == null) return;
+        if (guard == null)
+            return;
         guard.copyLocationAndAnglesFrom(villager);
         guard.setItemStackToSlot(EquipmentSlotType.MAINHAND, itemstack.copy());
         int i = GuardEntity.getRandomTypeForBiome(guard.world, guard.getPosition());
         guard.setGuardVariant(i);
         guard.enablePersistence();
-        if (villager.hasCustomName()) {
-            guard.setCustomName(villager.getCustomName());
-            guard.setCustomNameVisible(villager.isCustomNameVisible());
-        }
+        guard.setCustomName(villager.getCustomName());
+        guard.setCustomNameVisible(villager.isCustomNameVisible());
         guard.setCanPickUpLoot(true);
         guard.setDropChance(EquipmentSlotType.HEAD, 100.0F);
         guard.setDropChance(EquipmentSlotType.CHEST, 100.0F);
