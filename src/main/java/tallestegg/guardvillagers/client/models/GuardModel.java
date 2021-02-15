@@ -97,7 +97,7 @@ public class GuardModel extends BipedModel<GuardEntity> {
     public void eatingAnimationRightHand(Hand hand, GuardEntity entity, float ageInTicks) {
         ItemStack itemstack = entity.getHeldItem(hand);
         boolean drinkingoreating = itemstack.getUseAction() == UseAction.EAT || itemstack.getUseAction() == UseAction.DRINK;
-        if (entity.getItemInUseCount() > 0 && drinkingoreating && entity.getActiveHand() == hand) {
+        if (entity.isEating() && drinkingoreating) {
             this.bipedRightArm.rotateAngleY = -0.5F;
             this.bipedRightArm.rotateAngleX = -1.3F;
             this.bipedRightArm.rotateAngleZ = MathHelper.cos(ageInTicks) * 0.1F;
@@ -110,7 +110,8 @@ public class GuardModel extends BipedModel<GuardEntity> {
     public void eatingAnimationLeftHand(Hand hand, GuardEntity entity, float ageInTicks) {
         ItemStack itemstack = entity.getHeldItem(hand);
         boolean drinkingoreating = itemstack.getUseAction() == UseAction.EAT || itemstack.getUseAction() == UseAction.DRINK;
-        if (entity.getItemInUseCount() > 0 && drinkingoreating && entity.getActiveHand() == hand) {
+        if (entity.isEating() && drinkingoreating) {
+           // System.out.println(entity.getItemInUseCount());
             this.bipedLeftArm.rotateAngleY = 0.5F;
             this.bipedLeftArm.rotateAngleX = -1.3F;
             this.bipedLeftArm.rotateAngleZ = MathHelper.cos(ageInTicks) * 0.1F;
