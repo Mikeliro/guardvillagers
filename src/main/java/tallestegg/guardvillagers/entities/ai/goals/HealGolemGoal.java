@@ -35,7 +35,7 @@ public class HealGolemGoal extends Goal {
         List<IronGolemEntity> list = this.healer.world.getEntitiesWithinAABB(IronGolemEntity.class, this.healer.getBoundingBox().grow(10.0D));
         if (!list.isEmpty()) {
             for (IronGolemEntity golem : list) {
-                if (!golem.isInvisible() && golem.getType() == EntityType.IRON_GOLEM) { // Check if the entity is an Iron Golem, not any other golem.
+                if (!golem.isInvisible() && golem.isAlive() && golem.getType() == EntityType.IRON_GOLEM) { // Check if the entity is an Iron Golem, not any other golem.
                     if (golem.getHealth() <= 60.0D || this.hasStartedHealing && golem.getHealth() < golem.getMaxHealth()) {
                         this.golem = golem;
                         return true;

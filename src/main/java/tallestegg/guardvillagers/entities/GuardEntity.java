@@ -10,6 +10,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.CreatureEntity;
@@ -44,6 +45,7 @@ import net.minecraft.entity.ai.goal.TargetGoal;
 import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
+import net.minecraft.entity.merchant.villager.VillagerProfession;
 import net.minecraft.entity.monster.AbstractIllagerEntity;
 import net.minecraft.entity.monster.AbstractRaiderEntity;
 import net.minecraft.entity.monster.IMob;
@@ -73,7 +75,11 @@ import net.minecraft.item.PotionItem;
 import net.minecraft.item.ShieldItem;
 import net.minecraft.item.ShootableItem;
 import net.minecraft.item.SplashPotionItem;
-import net.minecraft.item.UseAction;
+import net.minecraft.loot.LootContext;
+import net.minecraft.loot.LootParameterSet;
+import net.minecraft.loot.LootParameters;
+import net.minecraft.loot.LootTable;
+import net.minecraft.loot.LootTables;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.datasync.DataParameter;
@@ -87,10 +93,12 @@ import net.minecraft.util.ActionResultType;
 import net.minecraft.util.DamageSource;
 import net.minecraft.util.Hand;
 import net.minecraft.util.RangedInteger;
+import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.SoundCategory;
 import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.TickRangeConverter;
+import net.minecraft.util.Util;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -107,6 +115,7 @@ import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.PlayerContainerEvent;
 import net.minecraftforge.fml.network.PacketDistributor;
 import tallestegg.guardvillagers.GuardItems;
+import tallestegg.guardvillagers.GuardLootTables;
 import tallestegg.guardvillagers.GuardPacketHandler;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.ai.goals.FollowShieldGuards;
@@ -124,6 +133,7 @@ import tallestegg.guardvillagers.networking.GuardOpenInventoryPacket;
 public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRangedAttackMob, IAngerable, IInventoryChangedListener {
     private static final DataParameter<Integer> GUARD_VARIANT = EntityDataManager.createKey(GuardEntity.class, DataSerializers.VARINT);
     private static final DataParameter<Boolean> DATA_CHARGING_STATE = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> EATING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> KICKING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     protected static final DataParameter<Optional<UUID>> OWNER_UNIQUE_ID = EntityDataManager.createKey(GuardEntity.class, DataSerializers.OPTIONAL_UNIQUE_ID);
     private static final Map<Pose, EntitySize> SIZE_BY_POSE = ImmutableMap.<Pose, EntitySize>builder().put(Pose.STANDING, EntitySize.flexible(0.6F, 1.95F)).put(Pose.SLEEPING, SLEEPING_SIZE).put(Pose.FALL_FLYING, EntitySize.flexible(0.6F, 0.6F)).put(Pose.SWIMMING, EntitySize.flexible(0.6F, 0.6F))
@@ -132,12 +142,19 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     public int kickTicks;
     public int shieldCoolDown;
     public int kickCoolDown;
-    private boolean eating;
     public boolean interacting;
     private boolean following;
     private int field_234197_bv_;
     private static final RangedInteger field_234196_bu_ = TickRangeConverter.convertRange(20, 39);
     private UUID field_234198_bw_;
+    private static final Map<EquipmentSlotType, ResourceLocation> EQUIPMENT_SLOT_ITEMS = Util.make(Maps.newHashMap(), (slotItems) -> {
+        slotItems.put(EquipmentSlotType.MAINHAND, GuardLootTables.GUARD_MAIN_HAND);
+        slotItems.put(EquipmentSlotType.OFFHAND, GuardLootTables.GUARD_OFF_HAND);
+        slotItems.put(EquipmentSlotType.HEAD, GuardLootTables.GUARD_HELMET);
+        slotItems.put(EquipmentSlotType.CHEST, GuardLootTables.GUARD_CHEST);
+        slotItems.put(EquipmentSlotType.LEGS, GuardLootTables.GUARD_LEGGINGS);
+        slotItems.put(EquipmentSlotType.FEET, GuardLootTables.GUARD_FEET);
+    });
 
     public GuardEntity(EntityType<? extends GuardEntity> type, World world) {
         super(type, world);
@@ -157,12 +174,21 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             type = ((GuardEntity.GuardData) spawnDataIn).variantData;
             spawnDataIn = new GuardEntity.GuardData(type);
         }
-        if (this.world.rand.nextFloat() < 0.5F) {
-            this.setItemStackToSlot(EquipmentSlotType.OFFHAND, new ItemStack(Items.SHIELD));
-        }
         this.setGuardVariant(type);
         this.setEquipmentBasedOnDifficulty(difficultyIn);
         return super.onInitialSpawn(worldIn, difficultyIn, reason, spawnDataIn, dataTag);
+    }
+
+    @Override
+    protected void collideWithEntity(Entity entityIn) {
+        super.collideWithEntity(entityIn);
+        if (entityIn instanceof CreatureEntity) {
+            CreatureEntity living = (CreatureEntity) entityIn;
+            boolean attackTargets = living.getAttackTarget() instanceof VillagerEntity || living.getAttackTarget() instanceof IronGolemEntity || living.getAttackTarget() instanceof GuardEntity;
+            if (attackTargets) {
+                this.setAttackTarget(living);
+            }
+        }
     }
 
     @Override
@@ -172,7 +198,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        if (this.getHeldItemOffhand().getUseAction() == UseAction.BLOCK && this.isAggressive() && this.getActiveHand() == Hand.OFF_HAND) {
+        if (this.isActiveItemStackBlocking() && this.isAggressive()) {
             return SoundEvents.ITEM_SHIELD_BLOCK;
         } else {
             return SoundEvents.ENTITY_VILLAGER_HURT;
@@ -203,7 +229,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     @Override
     protected void dropSpecialItems(DamageSource source, int looting, boolean recentlyHitIn) {
         super.dropSpecialItems(source, looting, recentlyHitIn);
-        this.guardInventory.func_233543_f_().forEach(this::entityDropItem);
+        for (int i = 0; i < this.guardInventory.getSizeInventory(); ++i) {
+            ItemStack itemstack = this.guardInventory.getStackInSlot(i);
+            if (!itemstack.isEmpty() && !EnchantmentHelper.hasVanishingCurse(itemstack)) {
+                this.entityDropItem(itemstack);
+            }
+        }
     }
 
     @Override
@@ -344,12 +375,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     protected void onItemUseFinish() {
-        super.onItemUseFinish();
         if (this.getHeldItemOffhand().getItem() instanceof PotionItem && !(this.getHeldItemOffhand().getItem() instanceof SplashPotionItem))
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.GLASS_BOTTLE));
         if (this.getHeldItemOffhand().getItem() instanceof MilkBucketItem)
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.BUCKET));
         this.setEating(false);
+        super.onItemUseFinish();
     }
 
     @Override
@@ -445,6 +476,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.dataManager.register(DATA_CHARGING_STATE, false);
         this.dataManager.register(KICKING, false);
         this.dataManager.register(OWNER_UNIQUE_ID, Optional.empty());
+        this.dataManager.register(EATING, false);
     }
 
     public boolean isCharging() {
@@ -463,53 +495,24 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.dataManager.set(KICKING, p_213671_1_);
     }
 
+    @Override
     protected void setEquipmentBasedOnDifficulty(DifficultyInstance difficulty) {
-        int i = this.rand.nextInt(2);
-        switch (i) {
-        case 0:
-            this.setItemStackToSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.IRON_SWORD));
-            break;
-
-        case 1:
-            this.setItemStackToSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.CROSSBOW));
-            break;
-        }// no more funky if statements
-        this.inventoryHandsDropChances[EquipmentSlotType.MAINHAND.getIndex()] = 100.0F;
-        this.inventoryHandsDropChances[EquipmentSlotType.OFFHAND.getIndex()] = 100.0F;
-        if (this.rand.nextFloat() < 0.15F) {
-            int value = this.rand.nextInt(2);
-            if (this.rand.nextFloat() < 0.095F) {
-                ++value;
-            }
-
-            if (this.rand.nextFloat() < 0.095F) {
-                ++value;
-            }
-
-            if (this.rand.nextFloat() < 0.095F) {
-                ++value;
-            }
-
-            boolean flag = true;
-
-            for (EquipmentSlotType equipmentslottype : EquipmentSlotType.values()) {
-                if (equipmentslottype.getSlotType() == EquipmentSlotType.Group.ARMOR) {
-                    ItemStack itemstack = this.getItemStackFromSlot(equipmentslottype);
-                    if (!flag && this.rand.nextFloat() < 0.20F) {
-                        break;
-                    }
-
-                    flag = false;
-                    if (itemstack.isEmpty()) {
-                        Item item = getArmorByChance(equipmentslottype, value);
-                        if (item != null) {
-                            this.setItemStackToSlot(equipmentslottype, new ItemStack(item));
-                        }
-                    }
-                }
+        for (EquipmentSlotType equipmentslottype : EquipmentSlotType.values()) {
+            for (ItemStack stack : this.getItemsFromLootTable(equipmentslottype)) {
+                this.setItemStackToSlot(equipmentslottype, stack);
             }
         }
+        this.inventoryHandsDropChances[EquipmentSlotType.MAINHAND.getIndex()] = 100.0F;
+        this.inventoryHandsDropChances[EquipmentSlotType.OFFHAND.getIndex()] = 100.0F;
+    }
 
+    public List<ItemStack> getItemsFromLootTable(EquipmentSlotType slot) {
+            if (EQUIPMENT_SLOT_ITEMS.containsKey(slot)) {
+                LootTable loot = this.world.getServer().getLootTableManager().getLootTableFromLocation(EQUIPMENT_SLOT_ITEMS.get(slot));
+                LootContext.Builder lootcontext$builder = (new LootContext.Builder((ServerWorld) this.world)).withParameter(LootParameters.THIS_ENTITY, this).withRandom(this.getRNG());
+                return loot.generate(lootcontext$builder.build(GuardLootTables.SLOT));
+        }
+        return null;
     }
 
     public int getGuardVariant() {
@@ -540,7 +543,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.goalSelector.addGoal(2, new AvoidEntityGoal<RavagerEntity>(this, RavagerEntity.class, 12.0F, 1.0D, 1.2D) {
                 @Override
                 public boolean shouldExecute() {
-                    return this.entity.getHealth() < 13 && !(entity.getHeldItemOffhand().getItem() instanceof ShieldItem) && super.shouldExecute();
+                    return this.entity.getHealth() <= 14 && !(entity.getHeldItemOffhand().getItem() instanceof ShieldItem) && super.shouldExecute();
                 }
 
                 @Override
@@ -550,9 +553,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                     }
                 }
             });
-        }
-        if (GuardConfig.GuardFormation) {
-            this.goalSelector.addGoal(2, new FollowShieldGuards(this)); // phalanx
         }
         if (GuardConfig.GuardsRunFromPolarBears) {
             this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, PolarBearEntity.class, 12.0F, 1.0D, 1.2D));
@@ -570,6 +570,9 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                 }
             });
         }
+        if (GuardConfig.GuardFormation) {
+            this.goalSelector.addGoal(5, new FollowShieldGuards(this)); // phalanx
+        }
         this.goalSelector.addGoal(8, new LookAtGoal(this, AbstractVillagerEntity.class, 8.0F));
         this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.6D));
         this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));
@@ -581,7 +584,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<RavagerEntity>(this, RavagerEntity.class, true) {
                 @Override
                 public boolean shouldExecute() {
-                    return this.goalOwner.getHealth() > 13 && super.shouldExecute();
+                    return this.goalOwner.getHealth() > 14 && super.shouldExecute();
                 }
             });
         }
@@ -592,7 +595,9 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractIllagerEntity.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractRaiderEntity.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IllusionerEntity.class, true));
-        if (GuardConfig.AttackAllMobs) {
+        if (GuardConfig.AttackAllMobs)
+
+        {
             this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, MobEntity.class, 5, true, true, (mob) -> {
                 return mob instanceof IMob && !GuardConfig.MobBlackList.contains(mob.getEntityString());
             }));
@@ -903,11 +908,11 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     }
 
     public boolean isEating() {
-        return eating;
+        return this.dataManager.get(EATING);
     }
 
     public void setEating(boolean eating) {
-        this.eating = eating;
+        this.dataManager.set(EATING, eating);
     }
 
     public static class GuardData implements ILivingEntityData {
