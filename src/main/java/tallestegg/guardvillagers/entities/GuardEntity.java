@@ -45,7 +45,6 @@ import net.minecraft.entity.ai.goal.TargetGoal;
 import net.minecraft.entity.effect.LightningBoltEntity;
 import net.minecraft.entity.merchant.villager.AbstractVillagerEntity;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
-import net.minecraft.entity.merchant.villager.VillagerProfession;
 import net.minecraft.entity.monster.AbstractIllagerEntity;
 import net.minecraft.entity.monster.AbstractRaiderEntity;
 import net.minecraft.entity.monster.IMob;
@@ -67,7 +66,6 @@ import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
-import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.MilkBucketItem;
@@ -76,10 +74,8 @@ import net.minecraft.item.ShieldItem;
 import net.minecraft.item.ShootableItem;
 import net.minecraft.item.SplashPotionItem;
 import net.minecraft.loot.LootContext;
-import net.minecraft.loot.LootParameterSet;
 import net.minecraft.loot.LootParameters;
 import net.minecraft.loot.LootTable;
-import net.minecraft.loot.LootTables;
 import net.minecraft.nbt.CompoundNBT;
 import net.minecraft.nbt.ListNBT;
 import net.minecraft.network.datasync.DataParameter;
@@ -379,7 +375,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.GLASS_BOTTLE));
         if (this.getHeldItemOffhand().getItem() instanceof MilkBucketItem)
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.BUCKET));
-        this.setEating(false);
         super.onItemUseFinish();
     }
 
@@ -507,10 +502,10 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     }
 
     public List<ItemStack> getItemsFromLootTable(EquipmentSlotType slot) {
-            if (EQUIPMENT_SLOT_ITEMS.containsKey(slot)) {
-                LootTable loot = this.world.getServer().getLootTableManager().getLootTableFromLocation(EQUIPMENT_SLOT_ITEMS.get(slot));
-                LootContext.Builder lootcontext$builder = (new LootContext.Builder((ServerWorld) this.world)).withParameter(LootParameters.THIS_ENTITY, this).withRandom(this.getRNG());
-                return loot.generate(lootcontext$builder.build(GuardLootTables.SLOT));
+        if (EQUIPMENT_SLOT_ITEMS.containsKey(slot)) {
+            LootTable loot = this.world.getServer().getLootTableManager().getLootTableFromLocation(EQUIPMENT_SLOT_ITEMS.get(slot));
+            LootContext.Builder lootcontext$builder = (new LootContext.Builder((ServerWorld) this.world)).withParameter(LootParameters.THIS_ENTITY, this).withRandom(this.getRNG());
+            return loot.generate(lootcontext$builder.build(GuardLootTables.SLOT));
         }
         return null;
     }

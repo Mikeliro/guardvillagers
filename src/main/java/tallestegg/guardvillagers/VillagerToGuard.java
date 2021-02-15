@@ -10,8 +10,11 @@ import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SwordItem;
+import net.minecraft.particles.IParticleData;
+import net.minecraft.particles.ParticleTypes;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.Hand;
+import net.minecraft.util.SoundEvents;
 import net.minecraftforge.event.entity.player.PlayerInteractEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -47,14 +50,24 @@ public class VillagerToGuard {
         VillagerEntity villager = (VillagerEntity) entity;
         if (guard == null)
             return;
+        if (entity.world.isRemote) {
+            IParticleData iparticledata = ParticleTypes.HAPPY_VILLAGER;
+            for (int i = 0; i < 10; ++i) {
+                double d0 = villager.getRNG().nextGaussian() * 0.02D;
+                double d1 = villager.getRNG().nextGaussian() * 0.02D;
+                double d2 = villager.getRNG().nextGaussian() * 0.02D;
+                villager.world.addParticle(iparticledata, villager.getPosX() + (double) (villager.getRNG().nextFloat() * villager.getWidth() * 2.0F) - (double) villager.getWidth(), villager.getPosY() + 0.5D + (double) (villager.getRNG().nextFloat() * villager.getHeight()),
+                        villager.getPosZ() + (double) (villager.getRNG().nextFloat() * villager.getWidth() * 2.0F) - (double) villager.getWidth(), d0, d1, d2);
+            }
+        }
         guard.copyLocationAndAnglesFrom(villager);
+        guard.playSound(SoundEvents.ENTITY_VILLAGER_YES, 1.0F, 1.0F);
         guard.setItemStackToSlot(EquipmentSlotType.MAINHAND, itemstack.copy());
         int i = GuardEntity.getRandomTypeForBiome(guard.world, guard.getPosition());
         guard.setGuardVariant(i);
         guard.enablePersistence();
         guard.setCustomName(villager.getCustomName());
         guard.setCustomNameVisible(villager.isCustomNameVisible());
-        guard.setCanPickUpLoot(true);
         guard.setDropChance(EquipmentSlotType.HEAD, 100.0F);
         guard.setDropChance(EquipmentSlotType.CHEST, 100.0F);
         guard.setDropChance(EquipmentSlotType.FEET, 100.0F);

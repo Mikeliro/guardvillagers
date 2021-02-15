@@ -23,6 +23,11 @@ public class GuardEatFoodGoal extends Goal {
     public static boolean isConsumable(ItemStack stack) {
         return stack.getUseAction() == UseAction.EAT  && stack.getCount() > 0 || stack.getUseAction() == UseAction.DRINK && !(stack.getItem() instanceof SplashPotionItem) && stack.getCount() > 0;
     }
+    
+    @Override
+    public boolean shouldContinueExecuting() {
+        return guard.isHandActive();
+    }
 
     @Override
     public void startExecuting() {

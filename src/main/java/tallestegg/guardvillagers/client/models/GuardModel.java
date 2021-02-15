@@ -2,7 +2,6 @@ package tallestegg.guardvillagers.client.models;
 
 import net.minecraft.client.renderer.entity.model.BipedModel;
 import net.minecraft.client.renderer.model.ModelRenderer;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.inventory.EquipmentSlotType;
 import net.minecraft.item.ArmorItem;
 import net.minecraft.item.ItemStack;
@@ -95,7 +94,7 @@ public class GuardModel extends BipedModel<GuardEntity> {
         }
     }
 
-    public void eatingAnimationRightHand(Hand hand, LivingEntity entity, float ageInTicks) {
+    public void eatingAnimationRightHand(Hand hand, GuardEntity entity, float ageInTicks) {
         ItemStack itemstack = entity.getHeldItem(hand);
         boolean drinkingoreating = itemstack.getUseAction() == UseAction.EAT || itemstack.getUseAction() == UseAction.DRINK;
         if (entity.getItemInUseCount() > 0 && drinkingoreating && entity.getActiveHand() == hand) {
@@ -108,7 +107,7 @@ public class GuardModel extends BipedModel<GuardEntity> {
         }
     }
 
-    public void eatingAnimationLeftHand(Hand hand, LivingEntity entity, float ageInTicks) {
+    public void eatingAnimationLeftHand(Hand hand, GuardEntity entity, float ageInTicks) {
         ItemStack itemstack = entity.getHeldItem(hand);
         boolean drinkingoreating = itemstack.getUseAction() == UseAction.EAT || itemstack.getUseAction() == UseAction.DRINK;
         if (entity.getItemInUseCount() > 0 && drinkingoreating && entity.getActiveHand() == hand) {
