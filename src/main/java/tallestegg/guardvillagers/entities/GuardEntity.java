@@ -371,11 +371,11 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     protected void onItemUseFinish() {
+        super.onItemUseFinish();
         if (this.getHeldItemOffhand().getItem() instanceof PotionItem && !(this.getHeldItemOffhand().getItem() instanceof SplashPotionItem))
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.GLASS_BOTTLE));
         if (this.getHeldItemOffhand().getItem() instanceof MilkBucketItem)
             this.setHeldItem(Hand.OFF_HAND, new ItemStack(Items.BUCKET));
-        super.onItemUseFinish();
     }
 
     @Override
@@ -744,7 +744,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.openGui((ServerPlayerEntity) player);
             return ActionResultType.func_233537_a_(this.world.isRemote);
         }
-        if (player.isPotionActive(Effects.HERO_OF_THE_VILLAGE)) {
+        if (player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && player.isCrouching()) {
             this.playSound(SoundEvents.ENTITY_VILLAGER_CELEBRATE, 1.0F, 1.0F);
             this.setFollowing(!this.isFollowing());
             this.setOwnerId(player.getUniqueID());

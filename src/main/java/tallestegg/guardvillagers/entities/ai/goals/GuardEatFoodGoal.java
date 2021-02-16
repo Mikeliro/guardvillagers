@@ -26,7 +26,8 @@ public class GuardEatFoodGoal extends Goal {
     
     @Override
     public boolean shouldContinueExecuting() {
-        return guard.isHandActive();
+        return guard.isHandActive() && guard.getAttackTarget() == null && guard.getHealth() < guard.getMaxHealth() || guard.getAttackTarget() != null && guard.getHealth() < guard.getMaxHealth() / 2 && guard.isEating(); 
+        // Guards will only keep eating until they're up to full health if they're not hostile, otherwise they will just heal back above half health and then join back the fight.
     }
 
     @Override
