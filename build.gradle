@@ -25,7 +25,7 @@ mixin {
     add sourceSets.main, "guardvillagers.refmap.json"
 }
 
-version = '1.16.4-1.1.9'
+version = '1.16.4-1.1.10'
 group = 'tallestegg.guardvillagers' // http://maven.apache.org/guides/mini/guide-naming-conventions.html
 archivesBaseName = 'guardvillagers'
 
