@@ -890,7 +890,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     }
 
     public static AttributeModifierMap.MutableAttribute func_234200_m_() {
-        return MobEntity.func_233666_p_().createMutableAttribute(Attributes.MAX_HEALTH, 20.0D).createMutableAttribute(Attributes.MOVEMENT_SPEED, 0.5D).createMutableAttribute(Attributes.ATTACK_DAMAGE, 1.0D).createMutableAttribute(Attributes.FOLLOW_RANGE, 25.0D);
+        return MobEntity.func_233666_p_().createMutableAttribute(Attributes.MAX_HEALTH, GuardConfig.GuardHealth).createMutableAttribute(Attributes.MOVEMENT_SPEED, GuardConfig.GuardSpeed).createMutableAttribute(Attributes.ATTACK_DAMAGE, 1.0D).createMutableAttribute(Attributes.FOLLOW_RANGE, GuardConfig.GuardFollowRange);
     }
 
     private net.minecraftforge.common.util.LazyOptional<?> itemHandler;

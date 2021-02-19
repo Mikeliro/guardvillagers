@@ -15,6 +15,7 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
+import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import tallestegg.guardvillagers.client.renderer.GuardRenderer;
@@ -32,24 +33,29 @@ public class GuardVillagers {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, GuardConfig.COMMON_SPEC);
-
+        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::dispatch);
         MinecraftForge.EVENT_BUS.register(this);
         MinecraftForge.EVENT_BUS.register(new HandlerEvents());
         MinecraftForge.EVENT_BUS.register(new VillagerToGuard());
         GuardEntityType.ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus());
         GuardItems.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
         GuardPacketHandler.registerPackets();
-        //GuardSpawner.inject();
+        // GuardSpawner.inject();
     }
 
     private void setup(final FMLCommonSetupEvent event) {
-        if (GuardConfig.IllusionerRaids) {
+        if (GuardConfig.IllusionerRaids)
             Raid.WaveMember.create("thebluemengroup", EntityType.ILLUSIONER, new int[] { 0, 0, 0, 0, 0, 1, 1, 2 });
-        }
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(GuardEntityType.GUARD.get(), GuardRenderer::new);
+    }
+
+    private void dispatch(final ParallelDispatchEvent event) {
+        event.enqueueWork(() -> {
+            GlobalEntityTypeAttributes.put(GuardEntityType.GUARD.get(), GuardEntity.func_234200_m_().create());
+        });
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
@@ -63,14 +69,5 @@ public class GuardVillagers {
     @SubscribeEvent
     public void onServerStarting(FMLServerStartingEvent event) {
 
-    }
-
-    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
-    public static class RegistryEvents {
-        @SubscribeEvent(priority = EventPriority.LOWEST)
-        public static void imstuff(final RegistryEvent.Register<EntityType<?>> event) {
-            GlobalEntityTypeAttributes.put(GuardEntityType.GUARD.get(), GuardEntity.func_234200_m_().create());
-            DeferredSpawnEggItem.initUnaddedEggs(); //credit : Cadiboo
-        }
     }
 }
