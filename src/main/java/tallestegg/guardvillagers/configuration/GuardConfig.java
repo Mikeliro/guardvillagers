@@ -40,6 +40,7 @@ public class GuardConfig {
     public static Double GuardFollowRange;
     public static Double GuardSpeed;
     public static Double GuardVillagerHelpRange;
+    public static boolean guardRegenHealth;
     public static List<String> MobBlackList;
 
     public static void bakeConfig() {
@@ -62,6 +63,7 @@ public class GuardConfig {
         GuardFollowRange = COMMON.GuardFollowRange.get();
         GuardHealth = COMMON.GuardHealth.get();
         GuardSpeed = COMMON.GuardSpeed.get();
+        guardRegenHealth = COMMON.regenGuardHealth.get();
     }
 
     @SubscribeEvent
@@ -91,6 +93,7 @@ public class GuardConfig {
         public final ForgeConfigSpec.DoubleValue GuardHealth;
         public final ForgeConfigSpec.DoubleValue GuardSpeed;
         public final ForgeConfigSpec.DoubleValue GuardFollowRange;
+        public final ForgeConfigSpec.BooleanValue regenGuardHealth;
         public final ForgeConfigSpec.ConfigValue<List<String>> MobBlackList;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
@@ -114,6 +117,7 @@ public class GuardConfig {
             GuardHealth = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("Guard Health", 20.0D, -500.0D, 500.0D);
             GuardSpeed = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("Guard speed", 0.5D, -500.0D, 500.0D);
             GuardFollowRange = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("Guard follow range", 25.0D, -500.0D, 500.0D);
+            regenGuardHealth = builder.translation(GuardVillagers.MODID + ".config.regen").define("Have guards regenerate their health?", false);
         }
     }
 }

@@ -404,6 +404,9 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.setOwnerId(null); // TODO find a better method instead of checking every tick, using potion expiry
                                    // event instead
         }
+        if (this.getHealth() < this.getMaxHealth() && this.ticksExisted % 100 == 0 && GuardConfig.guardRegenHealth) {
+            this.heal(1.0F);
+        }
         if (!this.world.isRemote) {
             this.func_241359_a_((ServerWorld) this.world, true);
         }
@@ -590,9 +593,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractIllagerEntity.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, AbstractRaiderEntity.class, true));
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, IllusionerEntity.class, true));
-        if (GuardConfig.AttackAllMobs)
-
-        {
+        if (GuardConfig.AttackAllMobs) {
             this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, MobEntity.class, 5, true, true, (mob) -> {
                 return mob instanceof IMob && !GuardConfig.MobBlackList.contains(mob.getEntityString());
             }));
@@ -890,7 +891,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     }
 
     public static AttributeModifierMap.MutableAttribute func_234200_m_() {
-        return MobEntity.func_233666_p_().createMutableAttribute(Attributes.MAX_HEALTH, GuardConfig.GuardHealth).createMutableAttribute(Attributes.MOVEMENT_SPEED, GuardConfig.GuardSpeed).createMutableAttribute(Attributes.ATTACK_DAMAGE, 1.0D).createMutableAttribute(Attributes.FOLLOW_RANGE, GuardConfig.GuardFollowRange);
+        return MobEntity.func_233666_p_().createMutableAttribute(Attributes.MAX_HEALTH, GuardConfig.GuardHealth).createMutableAttribute(Attributes.MOVEMENT_SPEED, GuardConfig.GuardSpeed).createMutableAttribute(Attributes.ATTACK_DAMAGE, 1.0D).createMutableAttribute(Attributes.FOLLOW_RANGE,
+                GuardConfig.GuardFollowRange);
     }
 
     private net.minecraftforge.common.util.LazyOptional<?> itemHandler;
