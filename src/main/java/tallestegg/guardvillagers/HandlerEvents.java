@@ -10,6 +10,7 @@ import net.minecraft.entity.monster.AbstractIllagerEntity;
 import net.minecraft.entity.monster.IMob;
 import net.minecraft.entity.monster.IllusionerEntity;
 import net.minecraft.entity.monster.RavagerEntity;
+import net.minecraft.entity.monster.SpiderEntity;
 import net.minecraft.entity.monster.WitchEntity;
 import net.minecraft.entity.monster.ZombieEntity;
 import net.minecraft.entity.passive.AnimalEntity;
@@ -20,6 +21,7 @@ import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
+import tallestegg.guardvillagers.entities.ai.goals.AttackEntityDaytimeGoal;
 import tallestegg.guardvillagers.entities.ai.goals.HealGolemGoal;
 import tallestegg.guardvillagers.entities.ai.goals.HealGuardAndPlayerGoal;
 
@@ -27,9 +29,13 @@ public class HandlerEvents {
     @SubscribeEvent
     public void onLivingSpawned(EntityJoinWorldEvent event) {
         if (GuardConfig.AttackAllMobs) {
-            if (event.getEntity() instanceof IMob && !GuardConfig.MobBlackList.contains(event.getEntity().getEntityString())) {
+            if (event.getEntity() instanceof IMob && !GuardConfig.MobBlackList.contains(event.getEntity().getEntityString()) && !(event.getEntity() instanceof SpiderEntity)) {
                 MobEntity mob = (MobEntity) event.getEntity();
                 mob.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(mob, GuardEntity.class, false));
+            }
+            if (event.getEntity() instanceof IMob && !GuardConfig.MobBlackList.contains(event.getEntity().getEntityString()) && event.getEntity() instanceof SpiderEntity) {
+                SpiderEntity spider = (SpiderEntity) event.getEntity();
+                spider.targetSelector.addGoal(3, new AttackEntityDaytimeGoal<>(spider, GuardEntity.class));
             }
         }
 
@@ -48,9 +54,9 @@ public class HandlerEvents {
 
         if (event.getEntity() instanceof AbstractVillagerEntity) {
             AbstractVillagerEntity villager = (AbstractVillagerEntity) event.getEntity();
-            if (GuardConfig.VillagersRunFromPolarBears) 
+            if (GuardConfig.VillagersRunFromPolarBears)
                 villager.goalSelector.addGoal(2, new AvoidEntityGoal<>(villager, PolarBearEntity.class, 6.0F, 1.0D, 1.2D)); // common sense.
-            if (GuardConfig.WitchesVillager) 
+            if (GuardConfig.WitchesVillager)
                 villager.goalSelector.addGoal(2, new AvoidEntityGoal<>(villager, WitchEntity.class, 6.0F, 1.0D, 1.2D));
         }
 
@@ -59,7 +65,7 @@ public class HandlerEvents {
             if (GuardConfig.BlackSmithHealing)
                 villager.goalSelector.addGoal(1, new HealGolemGoal(villager)); // TODO mixin into the villagers brain and make these tasks instead of goals.
             if (GuardConfig.ClericHealing)
-                villager.goalSelector.addGoal(1, new HealGuardAndPlayerGoal(villager, 5.0D, 100, 0, 10.0F));
+                villager.goalSelector.addGoal(1, new HealGuardAndPlayerGoal(villager, 1.0D, 100, 0, 10.0F));
         }
 
         if (event.getEntity() instanceof IronGolemEntity) {

@@ -33,10 +33,8 @@ public class ZombieEntityMixin extends MonsterEntity {
             GuardEntity guard = (GuardEntity) p_241847_2_;
             ZombieVillagerEntity zombieguard = guard.func_233656_b_(EntityType.ZOMBIE_VILLAGER, true);
             zombieguard.onInitialSpawn(p_241847_1_, p_241847_1_.getDifficultyForLocation(zombieguard.getPosition()), SpawnReason.CONVERSION, new ZombieEntity.GroupData(false, true), (CompoundNBT) null);
-            if (!this.isSilent()) {
+            if (!this.isSilent())
                 p_241847_1_.playEvent((PlayerEntity) null, 1026, this.getPosition(), 0);
-            }
         }
     }
-
 }

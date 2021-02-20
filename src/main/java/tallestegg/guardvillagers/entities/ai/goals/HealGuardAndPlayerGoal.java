@@ -61,7 +61,6 @@ public class HealGuardAndPlayerGoal extends Goal {
                 }
             }
         }
-        AxisAlignedBB axisalignedbb = this.healer.getBoundingBox().grow(10.0D, 8.0D, 10.0D);
         List<PlayerEntity> list2 = this.healer.world.getEntitiesWithinAABB(PlayerEntity.class, this.healer.getBoundingBox().grow(10.0D));
         if (!list2.isEmpty()) {
             for (PlayerEntity player : list2) {
@@ -74,35 +73,46 @@ public class HealGuardAndPlayerGoal extends Goal {
         return false;
     }
 
+    @Override
     public boolean shouldContinueExecuting() {
         return this.shouldExecute() && mob.getHealth() < mob.getMaxHealth();
     }
 
+    @Override
     public void resetTask() {
         this.mob = null;
         this.seeTime = 0;
         this.rangedAttackTime = -1;
     }
 
+    @Override
     public void tick() {
-        double d0 = this.healer.getDistanceSq(this.healer.getPosX(), this.healer.getPosY(), this.healer.getPosZ());
-        boolean flag = this.healer.getEntitySenses().canSee(this.healer);
+        if (mob == null)
+            return;
+        double d0 = this.healer.getDistanceSq(this.mob.getPosX(), this.mob.getPosY(), this.mob.getPosZ());
+        boolean flag = this.healer.getEntitySenses().canSee(this.mob);
         if (flag) {
             ++this.seeTime;
         } else {
             this.seeTime = 0;
         }
-        
-        if (mob.getDistance(healer) <= 3.0D) {
+        this.healer.faceEntity(mob, 30.0F, 30.0F);
+        this.healer.getLookController().setLookPositionWithEntity(this.healer, 30.0F, 30.0F);
+        if (!(d0 > (double) this.maxAttackDistance) && this.seeTime >= 5) {
+            this.healer.getNavigator().clearPath();
+        } else {
+            this.healer.getNavigator().tryMoveToEntityLiving(this.healer, this.entityMoveSpeed);
+        }
+        if (mob.getDistance(healer) <= 5.0D) {
             healer.getMoveHelper().strafe(-0.5F, 0);
         }
-        this.healer.faceEntity(mob, 30.0F, 30.0F);
-        if (--this.rangedAttackTime == 0 && mob.getHealth() < mob.getMaxHealth() && mob.isAlive() && healer.getDistance(mob) <= 5.0D) {
+        if (--this.rangedAttackTime == 0 && mob.getHealth() < mob.getMaxHealth() && mob.isAlive() && healer.getDistance(mob) >= 5.0D) {
             if (!flag) {
                 return;
             }
-            float f = MathHelper.sqrt(d0) / this.attackRadius;
-            this.throwPotion(mob, 1.0F);
+            float f =  this.attackRadius;
+            float lvt_5_1_ = MathHelper.clamp(f, 0.1F, 0.5F);
+            this.throwPotion(mob, lvt_5_1_);
             this.rangedAttackTime = MathHelper.floor(f * (float) (this.maxRangedAttackTime - this.attackIntervalMin) + (float) this.attackIntervalMin);
         } else if (this.rangedAttackTime < 0 && healer.getDistance(mob) <= 5.0D) {
             float f2 = MathHelper.sqrt(d0) / this.attackRadius;
@@ -122,7 +132,7 @@ public class HealGuardAndPlayerGoal extends Goal {
         } else {
             potion = Potions.REGENERATION;
         }
-        
+
         this.healer.faceEntity(mob, 30.0F, 30.0F);
         this.healer.getLookController().setLookPositionWithEntity(this.healer, 30.0F, 30.0F);
         PotionEntity potionentity = new PotionEntity(healer.world, healer);
