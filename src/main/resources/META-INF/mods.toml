@@ -9,8 +9,8 @@ version="1.1.11" #mandatory
 displayName="Guard Villagers" #mandatory
 updateJSONURL="https://raw.githubusercontent.com/seymourimadeit/guardvillagers/master/update.json" #optional
 displayURL="https://www.curseforge.com/minecraft/mc-mods/guard-villagers" #optional
-credits="TallestEgg and HadeZ/SadNya69 for the models." #optional
-authors="TallestEgg, HadeZ/SadNya69 for the models." #optional
+credits="TallestEgg and HadeZ/SadNya69 for the textures." #optional
+authors="TallestEgg, HadeZ/SadNya69 for the textures." #optional
 description='''
 Need some help with pest control? The Guards are ready to help!
 '''

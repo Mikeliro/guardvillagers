@@ -12,6 +12,7 @@ import net.minecraftforge.fml.network.simple.SimpleChannel;
 import tallestegg.guardvillagers.client.gui.GuardInventoryScreen;
 import tallestegg.guardvillagers.entities.GuardContainer;
 import tallestegg.guardvillagers.entities.GuardEntity;
+import tallestegg.guardvillagers.networking.GuardFollowPacket;
 import tallestegg.guardvillagers.networking.GuardOpenInventoryPacket;
 
 public class GuardPacketHandler {
@@ -21,6 +22,7 @@ public class GuardPacketHandler {
     public static void registerPackets() {
         int id = 0;
         INSTANCE.registerMessage(id++, GuardOpenInventoryPacket.class, GuardOpenInventoryPacket::encode, GuardOpenInventoryPacket::decode, GuardOpenInventoryPacket::handle);
+        INSTANCE.registerMessage(id++, GuardFollowPacket.class, GuardFollowPacket::encode, GuardFollowPacket::decode, GuardFollowPacket::handle);
     }
 
     @OnlyIn(Dist.CLIENT) //This should be removed when I find a better solution.

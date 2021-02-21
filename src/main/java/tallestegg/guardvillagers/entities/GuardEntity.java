@@ -131,6 +131,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     private static final DataParameter<Boolean> DATA_CHARGING_STATE = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> EATING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> KICKING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
+    private static final DataParameter<Boolean> FOLLOWING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     protected static final DataParameter<Optional<UUID>> OWNER_UNIQUE_ID = EntityDataManager.createKey(GuardEntity.class, DataSerializers.OPTIONAL_UNIQUE_ID);
     private static final Map<Pose, EntitySize> SIZE_BY_POSE = ImmutableMap.<Pose, EntitySize>builder().put(Pose.STANDING, EntitySize.flexible(0.6F, 1.95F)).put(Pose.SLEEPING, SLEEPING_SIZE).put(Pose.FALL_FLYING, EntitySize.flexible(0.6F, 0.6F)).put(Pose.SWIMMING, EntitySize.flexible(0.6F, 0.6F))
             .put(Pose.SPIN_ATTACK, EntitySize.flexible(0.6F, 0.6F)).put(Pose.CROUCHING, EntitySize.flexible(0.6F, 1.75F)).put(Pose.DYING, EntitySize.fixed(0.2F, 0.2F)).build();
@@ -139,7 +140,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     public int shieldCoolDown;
     public int kickCoolDown;
     public boolean interacting;
-    private boolean following;
     private int field_234197_bv_;
     private static final RangedInteger field_234196_bu_ = TickRangeConverter.convertRange(20, 39);
     private UUID field_234198_bw_;
@@ -157,9 +157,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.guardInventory.addListener(this);
         this.itemHandler = net.minecraftforge.common.util.LazyOptional.of(() -> new net.minecraftforge.items.wrapper.InvWrapper(this.guardInventory));
         this.enablePersistence();
-        if (GuardConfig.GuardsOpenDoors) {
+        if (GuardConfig.GuardsOpenDoors)
             ((GroundPathNavigator) this.getNavigator()).setBreakDoors(true);
-        }
     }
 
     @Override
@@ -246,7 +245,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         }
         this.setGuardVariant(compound.getInt("Type"));
         this.kickTicks = compound.getInt("KickTicks");
-        this.following = compound.getBoolean("Following");
+        this.setFollowing(compound.getBoolean("Following"));
         this.interacting = compound.getBoolean("Interacting");
         this.setEating(compound.getBoolean("Eating"));
         this.shieldCoolDown = compound.getInt("KickCooldown");
@@ -281,7 +280,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         compound.putInt("KickTicks", this.kickTicks);
         compound.putInt("ShieldCooldown", this.shieldCoolDown);
         compound.putInt("KickCooldown", this.kickCoolDown);
-        compound.putBoolean("Following", this.following);
+        compound.putBoolean("Following", this.isFollowing());
         compound.putBoolean("Interacting", this.interacting);
         compound.putBoolean("Eating", this.isEating());
         if (this.getOwnerId() != null) {
@@ -475,6 +474,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.dataManager.register(KICKING, false);
         this.dataManager.register(OWNER_UNIQUE_ID, Optional.empty());
         this.dataManager.register(EATING, false);
+        this.dataManager.register(FOLLOWING, false);
     }
 
     public boolean isCharging() {
@@ -672,11 +672,11 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     }
 
     public boolean isFollowing() {
-        return this.following;
+        return this.dataManager.get(FOLLOWING);
     }
 
     public void setFollowing(boolean following) {
-        this.following = following;
+        this.dataManager.set(FOLLOWING, following);
     }
 
     @Override
@@ -744,12 +744,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (!player.isCrouching() && this.isServerWorld() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && this.getAttackTarget() != player && this.onGround) {
             this.openGui((ServerPlayerEntity) player);
             return ActionResultType.func_233537_a_(this.world.isRemote);
-        }
-        if (player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && player.isCrouching()) {
-            this.playSound(SoundEvents.ENTITY_VILLAGER_CELEBRATE, 1.0F, 1.0F);
-            this.setFollowing(!this.isFollowing());
-            this.setOwnerId(player.getUniqueID());
-            return ActionResultType.SUCCESS;
         }
         return ActionResultType.SUCCESS;
     }
@@ -985,7 +979,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
         @Override
         public boolean shouldContinueExecuting() {
-            return guard.following && this.shouldExecute();
+            return guard.isFollowing() && this.shouldExecute();
         }
 
         @Override
@@ -996,7 +990,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                     PlayerEntity player = (PlayerEntity) mob;
                     if (!player.isInvisible() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE)) {
                         guard.setOwnerId(player.getUniqueID());
-                        if (guard.following) {
+                        if (guard.isFollowing()) {
                             return true;
                         }
                     }
@@ -1010,7 +1004,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.guard.getNavigator().clearPath();
             if (guard.getOwner() != null && !guard.getOwner().isPotionActive(Effects.HERO_OF_THE_VILLAGE)) {
                 guard.setOwnerId(null);
-                guard.following = false;
+                guard.setFollowing(false);
             }
         }
     }

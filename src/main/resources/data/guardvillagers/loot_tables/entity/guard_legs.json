@@ -15,7 +15,7 @@
         },
         {
           "type": "minecraft:item",
-          "name": "minecraft:leather_pants",
+          "name": "minecraft:leather_leggings",
           "conditions": [
             {
               "condition": "minecraft:random_chance",

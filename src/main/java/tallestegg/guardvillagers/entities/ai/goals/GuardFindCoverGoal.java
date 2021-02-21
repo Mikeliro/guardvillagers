@@ -1,5 +1,6 @@
 package tallestegg.guardvillagers.entities.ai.goals;
 
+import net.minecraft.entity.ai.RandomPositionGenerator;
 import net.minecraft.entity.ai.goal.RandomWalkingGoal;
 import net.minecraft.util.math.vector.Vector3d;
 import tallestegg.guardvillagers.entities.GuardEntity;
@@ -30,6 +31,11 @@ public class GuardFindCoverGoal extends RandomWalkingGoal {
     public void tick() {
         super.tick();
         this.walkTimer--;
+    }
+
+    @Override
+    protected Vector3d getPosition() {
+        return guard.getAttackTarget() != null ? RandomPositionGenerator.findRandomTargetBlockAwayFrom(guard, 16, 7, guard.getAttackTarget().getPositionVec()) : super.getPosition();
     }
 
     @Override

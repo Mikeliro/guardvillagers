@@ -55,7 +55,7 @@ public class HealGuardAndPlayerGoal extends Goal {
         List<GuardEntity> list = this.healer.world.getEntitiesWithinAABB(GuardEntity.class, this.healer.getBoundingBox().grow(10.0D));
         if (!list.isEmpty()) {
             for (GuardEntity mob : list) {
-                if (mob.isAlive()) {
+                if (mob.isAlive() && mob.getHealth() < mob.getMaxHealth()) {
                     this.mob = mob;
                     return true;
                 }
@@ -64,7 +64,7 @@ public class HealGuardAndPlayerGoal extends Goal {
         List<PlayerEntity> list2 = this.healer.world.getEntitiesWithinAABB(PlayerEntity.class, this.healer.getBoundingBox().grow(10.0D));
         if (!list2.isEmpty()) {
             for (PlayerEntity player : list2) {
-                if (player.isAlive() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && !player.abilities.isCreativeMode) {
+                if (player.isAlive() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && !player.abilities.isCreativeMode && mob.getHealth() < mob.getMaxHealth()) {
                     this.mob = player;
                     return true;
                 }
