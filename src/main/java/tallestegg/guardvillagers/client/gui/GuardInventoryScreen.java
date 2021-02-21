@@ -22,6 +22,8 @@ public class GuardInventoryScreen extends ContainerScreen<GuardContainer> {
     private static final ResourceLocation GUARD_FOLLOWING_ICON = new ResourceLocation(GuardVillagers.MODID, "textures/container/following_icons.png");
     private static final ResourceLocation GUARD_NOT_FOLLOWING_ICON = new ResourceLocation(GuardVillagers.MODID, "textures/container/not_following_icons.png");
     private final GuardEntity guard;
+    private boolean buttonsDrawn;
+    private boolean guardFollowing;
     private float mousePosX;
     private float mousePosY;
 
@@ -34,12 +36,16 @@ public class GuardInventoryScreen extends ContainerScreen<GuardContainer> {
     }
 
     @Override
-    protected void init() {
-        super.init();
+    public void tick() {
+        super.tick();
         ResourceLocation icon_texture = guard.isFollowing() ? GUARD_FOLLOWING_ICON : GUARD_NOT_FOLLOWING_ICON;
-        this.addButton(new ImageButton(this.guiLeft + 100, this.height / 2 - 40, 20, 18, 0, 0, 19, icon_texture, (p_214086_1_) -> {
-            GuardPacketHandler.INSTANCE.sendToServer(new GuardFollowPacket(guard.getEntityId()));
-        }));
+        if (!buttonsDrawn || guardFollowing || !guardFollowing) {
+            this.addButton(new ImageButton(this.guiLeft + 100, this.height / 2 - 40, 20, 18, 0, 0, 19, icon_texture, (p_214086_1_) -> {
+                GuardPacketHandler.INSTANCE.sendToServer(new GuardFollowPacket(guard.getEntityId()));
+                guardFollowing = guard.isFollowing();
+            }));
+            buttonsDrawn = true;
+        }
     }
 
     @SuppressWarnings("deprecation")
