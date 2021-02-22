@@ -176,7 +176,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     protected void collideWithEntity(Entity entityIn) {
-        super.collideWithEntity(entityIn);
         if (entityIn instanceof CreatureEntity) {
             CreatureEntity living = (CreatureEntity) entityIn;
             boolean attackTargets = living.getAttackTarget() instanceof VillagerEntity || living.getAttackTarget() instanceof IronGolemEntity || living.getAttackTarget() instanceof GuardEntity;
@@ -184,6 +183,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                 this.setAttackTarget(living);
             }
         }
+        super.collideWithEntity(entityIn);
     }
 
     @Override
@@ -423,7 +423,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (poseIn == Pose.CROUCHING) {
             return 1.40F;
         }
-        return sizeIn.height * 0.85F;
+        return super.getStandingEyeHeight(poseIn, sizeIn);
     }
 
     @Override
@@ -601,8 +601,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::func_233680_b_));
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, ZombieEntity.class, true));
         this.targetSelector.addGoal(4, new ResetAngerGoal<>(this, false));
-        if (GuardConfig.GuardVillagerHelpRange > 0.0D)
-            this.targetSelector.addGoal(5, new HelpVillagerGoal(this));
     }
 
     @Override

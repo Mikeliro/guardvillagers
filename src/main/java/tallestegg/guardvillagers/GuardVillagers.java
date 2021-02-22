@@ -19,6 +19,7 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import tallestegg.guardvillagers.client.renderer.GuardRenderer;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
+import tallestegg.guardvillagers.items.DeferredSpawnEggItem;
 
 @Mod(GuardVillagers.MODID)
 public class GuardVillagers {
@@ -32,8 +33,6 @@ public class GuardVillagers {
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, GuardConfig.COMMON_SPEC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::dispatch);
         MinecraftForge.EVENT_BUS.register(this);
-        MinecraftForge.EVENT_BUS.register(new HandlerEvents());
-        MinecraftForge.EVENT_BUS.register(new VillagerToGuard());
         GuardEntityType.ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus());
         GuardItems.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
         GuardPacketHandler.registerPackets();
@@ -52,6 +51,7 @@ public class GuardVillagers {
     private void dispatch(final ParallelDispatchEvent event) {
         event.enqueueWork(() -> {
             GlobalEntityTypeAttributes.put(GuardEntityType.GUARD.get(), GuardEntity.func_234200_m_().create());
+            DeferredSpawnEggItem.initUnaddedEggs();
         });
     }
 

@@ -21,10 +21,10 @@ import net.minecraftforge.fml.common.Mod;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
 
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+@Mod.EventBusSubscriber(modid = GuardVillagers.MODID)
 public class VillagerToGuard {
     @SubscribeEvent
-    public void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
+    public static void onEntityInteract(PlayerInteractEvent.EntityInteract event) {
         ItemStack itemstack = event.getItemStack();
         if (itemstack.getItem() instanceof SwordItem && event.getPlayer().isCrouching() || itemstack.getItem() instanceof CrossbowItem && event.getPlayer().isCrouching()) {
             Entity target = event.getTarget();
@@ -33,7 +33,7 @@ public class VillagerToGuard {
                 if (!villager.isChild()) {
                     if (villager.getVillagerData().getProfession() == VillagerProfession.NONE || villager.getVillagerData().getProfession() == VillagerProfession.NITWIT) {
                         if (!GuardConfig.ConvertVillagerIfHaveHOTV || event.getPlayer().isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.ConvertVillagerIfHaveHOTV) {
-                            this.convertVillager(villager, event.getPlayer());
+                            VillagerToGuard.convertVillager(villager, event.getPlayer());
                             if (!event.getPlayer().abilities.isCreativeMode)
                                 itemstack.shrink(1);
                         }
@@ -43,7 +43,7 @@ public class VillagerToGuard {
         }
     }
 
-    private void convertVillager(LivingEntity entity, PlayerEntity player) {
+     private static void convertVillager(LivingEntity entity, PlayerEntity player) {
         player.swingArm(Hand.MAIN_HAND);
         ItemStack itemstack = player.getItemStackFromSlot(EquipmentSlotType.MAINHAND);
         GuardEntity guard = GuardEntityType.GUARD.get().create(entity.world);

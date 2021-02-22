@@ -34,6 +34,12 @@ public class GuardInventoryScreen extends ContainerScreen<GuardContainer> {
         this.playerInventoryTitleX = 100;
         this.passEvents = false;
     }
+    
+    @Override
+    public void init() {
+        super.init();
+        buttonsDrawn = false;
+    }
 
     @Override
     public void tick() {
@@ -73,7 +79,6 @@ public class GuardInventoryScreen extends ContainerScreen<GuardContainer> {
     @Override
     public void render(MatrixStack matrixStack, int mouseX, int mouseY, float partialTicks) {
         this.renderBackground(matrixStack);
-        ResourceLocation icon_texture = guard.isFollowing() ? GUARD_FOLLOWING_ICON : GUARD_NOT_FOLLOWING_ICON;
         this.mousePosX = (float) mouseX;
         this.mousePosY = (float) mouseY;
         super.render(matrixStack, mouseX, mouseY, partialTicks);

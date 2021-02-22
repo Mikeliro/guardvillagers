@@ -1,5 +1,9 @@
 package tallestegg.guardvillagers;
 
+import java.util.List;
+
+import net.minecraft.entity.EntityType;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.entity.ai.goal.HurtByTargetGoal;
@@ -18,16 +22,53 @@ import net.minecraft.entity.passive.CatEntity;
 import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.passive.PolarBearEntity;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
+import net.minecraftforge.event.entity.living.LivingHurtEvent;
+import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.fml.common.Mod;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
 import tallestegg.guardvillagers.entities.ai.goals.AttackEntityDaytimeGoal;
 import tallestegg.guardvillagers.entities.ai.goals.HealGolemGoal;
 import tallestegg.guardvillagers.entities.ai.goals.HealGuardAndPlayerGoal;
 
+@Mod.EventBusSubscriber(modid = GuardVillagers.MODID)
 public class HandlerEvents {
     @SubscribeEvent
-    public void onLivingSpawned(EntityJoinWorldEvent event) {
+    public static void onEntityTarget(LivingSetAttackTargetEvent event) {
+        LivingEntity entity = (LivingEntity) event.getEntity();
+        LivingEntity target = event.getTarget();
+        if (target == null || entity.getType() == GuardEntityType.GUARD.get())
+            return;
+        if (target.getType() == EntityType.VILLAGER || target.getType() == GuardEntityType.GUARD.get() ) {
+            List<MobEntity> list = entity.world.getEntitiesWithinAABB(MobEntity.class, entity.getBoundingBox().grow(GuardConfig.GuardVillagerHelpRange, 5.0D, GuardConfig.GuardVillagerHelpRange));
+            for (MobEntity mob : list) {
+                if (mob.getType() == GuardEntityType.GUARD.get()) {
+                    mob.setAttackTarget(entity);
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onEntityHurt(LivingHurtEvent event) {
+        LivingEntity entity = (LivingEntity) event.getEntity();
+        MobEntity trueSource = ((MobEntity) event.getSource().getTrueSource());
+        if (entity == null || trueSource != null && trueSource.getType() == GuardEntityType.GUARD.get())
+            return;
+        boolean isVillager = entity.getType() == EntityType.VILLAGER || entity.getType() == GuardEntityType.GUARD.get();
+        if (isVillager && event.getSource().getTrueSource() instanceof MobEntity && trueSource == entity) {
+            List<MobEntity> list = ((MobEntity) event.getSource().getTrueSource()).world.getEntitiesWithinAABB(MobEntity.class, ((MobEntity) event.getSource().getTrueSource()).getBoundingBox().grow(GuardConfig.GuardVillagerHelpRange, 5.0D, GuardConfig.GuardVillagerHelpRange));
+            for (MobEntity mob : list) {
+                if (mob.getType() == GuardEntityType.GUARD.get()) {
+                    mob.setAttackTarget((MobEntity) event.getSource().getTrueSource());
+                }
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public static void onLivingSpawned(EntityJoinWorldEvent event) {
         if (GuardConfig.AttackAllMobs) {
             if (event.getEntity() instanceof IMob && !GuardConfig.MobBlackList.contains(event.getEntity().getEntityString()) && !(event.getEntity() instanceof SpiderEntity)) {
                 MobEntity mob = (MobEntity) event.getEntity();
