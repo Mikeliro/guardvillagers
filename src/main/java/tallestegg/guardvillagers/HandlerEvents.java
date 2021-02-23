@@ -34,13 +34,14 @@ import tallestegg.guardvillagers.entities.ai.goals.HealGuardAndPlayerGoal;
 
 @Mod.EventBusSubscriber(modid = GuardVillagers.MODID)
 public class HandlerEvents {
+    
     @SubscribeEvent
     public static void onEntityTarget(LivingSetAttackTargetEvent event) {
         LivingEntity entity = (LivingEntity) event.getEntity();
         LivingEntity target = event.getTarget();
         if (target == null || entity.getType() == GuardEntityType.GUARD.get())
             return;
-        if (target.getType() == EntityType.VILLAGER || target.getType() == GuardEntityType.GUARD.get() ) {
+        if (target.getType() == EntityType.VILLAGER)  {
             List<MobEntity> list = entity.world.getEntitiesWithinAABB(MobEntity.class, entity.getBoundingBox().grow(GuardConfig.GuardVillagerHelpRange, 5.0D, GuardConfig.GuardVillagerHelpRange));
             for (MobEntity mob : list) {
                 if (mob.getType() == GuardEntityType.GUARD.get()) {
@@ -53,14 +54,14 @@ public class HandlerEvents {
     @SubscribeEvent
     public static void onEntityHurt(LivingHurtEvent event) {
         LivingEntity entity = (LivingEntity) event.getEntity();
-        MobEntity trueSource = ((MobEntity) event.getSource().getTrueSource());
+        LivingEntity trueSource = (LivingEntity) event.getSource().getTrueSource();
         if (entity == null || trueSource != null && trueSource.getType() == GuardEntityType.GUARD.get())
             return;
-        boolean isVillager = entity.getType() == EntityType.VILLAGER || entity.getType() == GuardEntityType.GUARD.get();
+        boolean isVillager = entity.getType() == EntityType.VILLAGER;
         if (isVillager && event.getSource().getTrueSource() instanceof MobEntity && trueSource == entity) {
-            List<MobEntity> list = ((MobEntity) event.getSource().getTrueSource()).world.getEntitiesWithinAABB(MobEntity.class, ((MobEntity) event.getSource().getTrueSource()).getBoundingBox().grow(GuardConfig.GuardVillagerHelpRange, 5.0D, GuardConfig.GuardVillagerHelpRange));
+            List<MobEntity> list = trueSource.world.getEntitiesWithinAABB(MobEntity.class, trueSource.getBoundingBox().grow(GuardConfig.GuardVillagerHelpRange, 5.0D, GuardConfig.GuardVillagerHelpRange));
             for (MobEntity mob : list) {
-                if (mob.getType() == GuardEntityType.GUARD.get()) {
+                if (mob.getType() == GuardEntityType.GUARD.get() && mob.getAttackTarget() == null) {
                     mob.setAttackTarget((MobEntity) event.getSource().getTrueSource());
                 }
             }

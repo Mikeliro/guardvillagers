@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import net.minecraft.entity.EntityPredicate;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
@@ -21,6 +22,7 @@ import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.AxisAlignedBB;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.vector.Vector3d;
+import tallestegg.guardvillagers.GuardEntityType;
 import tallestegg.guardvillagers.entities.GuardEntity;
 
 @SuppressWarnings("unused")
@@ -52,21 +54,14 @@ public class HealGuardAndPlayerGoal extends Goal {
         if (((VillagerEntity) this.healer).getVillagerData().getProfession() != VillagerProfession.CLERIC || this.healer.isSleeping()) {
             return false;
         }
-        List<GuardEntity> list = this.healer.world.getEntitiesWithinAABB(GuardEntity.class, this.healer.getBoundingBox().grow(10.0D));
+        List<LivingEntity> list = this.healer.world.getEntitiesWithinAABB(LivingEntity.class, this.healer.getBoundingBox().grow(10.0D, 3.0D, 10.0D));
         if (!list.isEmpty()) {
-            for (GuardEntity mob : list) {
-                if (mob.isAlive() && mob.getHealth() < mob.getMaxHealth()) {
-                    this.mob = mob;
-                    return true;
-                }
-            }
-        }
-        List<PlayerEntity> list2 = this.healer.world.getEntitiesWithinAABB(PlayerEntity.class, this.healer.getBoundingBox().grow(10.0D));
-        if (!list2.isEmpty()) {
-            for (PlayerEntity player : list2) {
-                if (player.isAlive() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && !player.abilities.isCreativeMode && mob.getHealth() < mob.getMaxHealth()) {
-                    this.mob = player;
-                    return true;
+            for (LivingEntity mob : list) {
+                if (mob != null) {
+                    if (mob.getType() == GuardEntityType.GUARD.get() && mob != null && mob.isAlive() && mob.getHealth() < mob.getMaxHealth() || mob instanceof PlayerEntity && mob.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && !((PlayerEntity)mob).abilities.isCreativeMode && mob.getHealth() < mob.getMaxHealth()) {
+                        this.mob = mob;
+                        return true;
+                    }
                 }
             }
         }
@@ -75,7 +70,7 @@ public class HealGuardAndPlayerGoal extends Goal {
 
     @Override
     public boolean shouldContinueExecuting() {
-        return this.shouldExecute() && mob.getHealth() < mob.getMaxHealth();
+        return this.shouldExecute() && mob != null && mob.getHealth() < mob.getMaxHealth();
     }
 
     @Override

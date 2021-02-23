@@ -117,7 +117,6 @@ import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.ai.goals.FollowShieldGuards;
 import tallestegg.guardvillagers.entities.ai.goals.GuardEatFoodGoal;
 import tallestegg.guardvillagers.entities.ai.goals.GuardFindCoverGoal;
-import tallestegg.guardvillagers.entities.ai.goals.HelpVillagerGoal;
 import tallestegg.guardvillagers.entities.ai.goals.HeroHurtByTargetGoal;
 import tallestegg.guardvillagers.entities.ai.goals.HeroHurtTargetGoal;
 import tallestegg.guardvillagers.entities.ai.goals.KickGoal;
@@ -179,9 +178,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (entityIn instanceof CreatureEntity) {
             CreatureEntity living = (CreatureEntity) entityIn;
             boolean attackTargets = living.getAttackTarget() instanceof VillagerEntity || living.getAttackTarget() instanceof IronGolemEntity || living.getAttackTarget() instanceof GuardEntity;
-            if (attackTargets) {
+            if (attackTargets)
                 this.setAttackTarget(living);
-            }
         }
         super.collideWithEntity(entityIn);
     }
@@ -605,6 +603,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     public void attackEntityWithRangedAttack(LivingEntity target, float distanceFactor) {
+        this.shieldCoolDown = 8;
         if (this.getHeldItemMainhand().getItem() instanceof CrossbowItem)
             this.func_234281_b_(this, 6.0F);
         if (this.getHeldItemMainhand().getItem() instanceof BowItem) {
