@@ -866,7 +866,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     public void func_230258_H__() {
-        this.setAngerTime(field_234196_bu_.func_233018_a_(this.rand));
+        this.setAngerTime(field_234196_bu_.getRandomWithinRange(rand));
     }
 
     public void openGui(ServerPlayerEntity player) {

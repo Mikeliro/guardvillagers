@@ -75,9 +75,9 @@ public class VillagerToGuard {
         guard.setDropChance(EquipmentSlotType.MAINHAND, 100.0F);
         guard.setDropChance(EquipmentSlotType.OFFHAND, 100.0F);
         villager.world.addEntity(guard);
-        villager.func_213742_a(MemoryModuleType.HOME);
-        villager.func_213742_a(MemoryModuleType.JOB_SITE);
-        villager.func_213742_a(MemoryModuleType.MEETING_POINT);
+        villager.resetMemoryPoint(MemoryModuleType.HOME);
+        villager.resetMemoryPoint(MemoryModuleType.JOB_SITE);
+        villager.resetMemoryPoint(MemoryModuleType.MEETING_POINT);
         villager.remove();
     }
 }
