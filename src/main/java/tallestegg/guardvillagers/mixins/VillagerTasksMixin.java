@@ -8,6 +8,7 @@ import net.minecraft.entity.ai.brain.task.SpawnGolemTask;
 import net.minecraft.entity.ai.brain.task.VillagerTasks;
 import net.minecraft.entity.merchant.villager.VillagerProfession;
 import tallestegg.guardvillagers.entities.ai.goals.tasks.HealGuardAndPlayerTask;
+import tallestegg.guardvillagers.entities.ai.goals.tasks.RepairGolemTask;
 
 @Mixin(VillagerTasks.class)
 public class VillagerTasksMixin {
@@ -15,6 +16,8 @@ public class VillagerTasksMixin {
     private static SpawnGolemTask work(SpawnGolemTask task, VillagerProfession profession, float p_220639_1_) {
         if (profession == VillagerProfession.CLERIC) {
             task = new HealGuardAndPlayerTask(100, 0, 10.0F, 10.0F);
+        } else if (profession == VillagerProfession.ARMORER || profession == VillagerProfession.WEAPONSMITH || profession == VillagerProfession.TOOLSMITH) {
+            task = new RepairGolemTask();
         }
         return task;
     }
