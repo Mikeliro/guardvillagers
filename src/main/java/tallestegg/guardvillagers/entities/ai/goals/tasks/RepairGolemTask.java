@@ -15,7 +15,6 @@ import net.minecraft.world.server.ServerWorld;
 
 public class RepairGolemTask extends SpawnGolemTask {
     private IronGolemEntity golem;
-
     private boolean hasStartedHealing;
 
     public RepairGolemTask() {
