@@ -1,4 +1,4 @@
-package tallestegg.guardvillagers.entities.ai.goals.tasks;
+package tallestegg.guardvillagers.entities.ai.tasks;
 
 import java.util.List;
 
@@ -31,19 +31,19 @@ public class HealGuardAndPlayerTask extends SpawnGolemTask {
     private final float attackRadius;
     private final float maxAttackDistance;
 
-    public HealGuardAndPlayerTask(int attackIntervalMin, int maxRangedAttackTime, float attackRadius, float maxAttackDistance) {
+    public HealGuardAndPlayerTask(int p_i1650_4_, int maxAttackTime, float maxAttackDistanceIn) {
         super();
-        this.attackIntervalMin = attackIntervalMin;
-        this.maxRangedAttackTime = maxRangedAttackTime;
-        this.attackRadius = attackRadius;
-        this.maxAttackDistance = maxAttackDistance * maxAttackDistance;
+        this.attackIntervalMin = p_i1650_4_;
+        this.maxRangedAttackTime = 0;
+        this.attackRadius = maxAttackDistanceIn;
+        this.maxAttackDistance = maxAttackDistanceIn * maxAttackDistanceIn;
     }
 
     @Override
     protected boolean shouldExecute(ServerWorld worldIn, VillagerEntity owner) {
         if (!GuardConfig.ClericHealing) {
             return false;
-        } else if (owner.getVillagerData().getProfession() != VillagerProfession.CLERIC && !owner.isSleeping()) {
+        } else if (owner.getVillagerData().getProfession() != VillagerProfession.CLERIC || owner.isSleeping()) {
             return false;
         } else {
             List<LivingEntity> list = owner.world.getEntitiesWithinAABB(LivingEntity.class, owner.getBoundingBox().grow(10.0D, 3.0D, 10.0D));
@@ -79,6 +79,7 @@ public class HealGuardAndPlayerTask extends SpawnGolemTask {
             this.seeTime = 0;
         }
         BrainUtil.lookAt(owner, entityToHeal);
+        owner.faceEntity(entityToHeal, 90.0F, 90.0F);
         if (!(d0 > (double) this.maxAttackDistance) && this.seeTime >= 5) {
             owner.getNavigator().clearPath();
         } else {
@@ -87,12 +88,12 @@ public class HealGuardAndPlayerTask extends SpawnGolemTask {
         if (entityToHeal.getDistance(owner) <= 5.0D) {
             owner.getMoveHelper().strafe(-0.5F, 0);
         }
-        if (--this.rangedAttackTime == 0 && entityToHeal.getHealth() < entityToHeal.getMaxHealth() && entityToHeal.isAlive() && owner.getDistance(entityToHeal) >= 5.0D) {
+        if (--this.rangedAttackTime == 0 && entityToHeal.getHealth() < entityToHeal.getMaxHealth() && entityToHeal.isAlive()) {
             if (!flag) {
                 return;
             }
             float f =  this.attackRadius;
-            float lvt_5_1_ = MathHelper.clamp(f, 0.1F, 0.5F);
+            float lvt_5_1_ = MathHelper.clamp(f, 0.5F, 0.5F);
             this.throwPotion(owner, entityToHeal, lvt_5_1_);
             this.rangedAttackTime = MathHelper.floor(f * (float) (this.maxRangedAttackTime - this.attackIntervalMin) + (float) this.attackIntervalMin);
         } else if (this.rangedAttackTime < 0 && owner.getDistance(entityToHeal) >= 5.0D) {

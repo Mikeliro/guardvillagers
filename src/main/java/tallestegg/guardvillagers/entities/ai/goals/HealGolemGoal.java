@@ -37,6 +37,7 @@ public class HealGolemGoal extends Goal {
             for (IronGolemEntity golem : list) {
                 if (!golem.isInvisible() && golem.isAlive() && golem.getType() == EntityType.IRON_GOLEM) { // Check if the entity is an Iron Golem, not any other golem.
                     if (golem.getHealth() <= 60.0D || this.hasStartedHealing && golem.getHealth() < golem.getMaxHealth()) {
+                        healer.setItemStackToSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.IRON_INGOT));
                         this.golem = golem;
                         return true;
                     }
@@ -57,6 +58,7 @@ public class HealGolemGoal extends Goal {
     public void startExecuting() {
         if (golem == null)
             return;
+        healer.setItemStackToSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.IRON_INGOT));
         this.healGolem();
     }
 
@@ -68,10 +70,10 @@ public class HealGolemGoal extends Goal {
     }
 
     public void healGolem() {
+        healer.setItemStackToSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.IRON_INGOT));
         healer.getNavigator().tryMoveToEntityLiving(golem, 0.5);
         if (healer.getDistance(golem) <= 2.0D) {
             this.hasStartedHealing = true;
-            healer.setItemStackToSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.IRON_INGOT));
             healer.swingArm(Hand.MAIN_HAND);
             golem.heal(15.0F);
             float f1 = 1.0F + (golem.getRNG().nextFloat() - golem.getRNG().nextFloat()) * 0.2F;

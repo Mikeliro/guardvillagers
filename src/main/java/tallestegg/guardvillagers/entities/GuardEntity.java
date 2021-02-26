@@ -401,8 +401,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.setOwnerId(null); // TODO find a better method instead of checking every tick, using potion expiry
                                    // event instead
         }
-        if (this.getHealth() < this.getMaxHealth() && this.ticksExisted % 100 == 0 && GuardConfig.guardRegenHealth) {
-            this.heal(1.0F);
+        if (this.getHealth() < this.getMaxHealth() && this.ticksExisted % GuardConfig.ticksHealthRegen == 0) {
+            this.heal(GuardConfig.amountOfHealthRegenerated);
         }
         if (!this.world.isRemote) {
             this.func_241359_a_((ServerWorld) this.world, true);
@@ -739,10 +739,11 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     @Override
     protected ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
         if (!player.isCrouching() && this.isServerWorld() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && this.getAttackTarget() != player && this.onGround) {
+            player.swingArm(hand);
             this.openGui((ServerPlayerEntity) player);
             return ActionResultType.func_233537_a_(this.world.isRemote);
         }
-        return ActionResultType.SUCCESS;
+        return player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) ? ActionResultType.SUCCESS : ActionResultType.PASS;
     }
 
     @Override

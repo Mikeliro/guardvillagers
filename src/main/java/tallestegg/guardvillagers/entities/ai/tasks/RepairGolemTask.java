@@ -1,4 +1,4 @@
-package tallestegg.guardvillagers.entities.ai.goals.tasks;
+package tallestegg.guardvillagers.entities.ai.tasks;
 
 import java.util.List;
 
@@ -40,15 +40,24 @@ public class RepairGolemTask extends SpawnGolemTask {
 
     @Override
     protected void resetTask(ServerWorld worldIn, VillagerEntity entityIn, long gameTimeIn) {
-        entityIn.setItemStackToSlot(EquipmentSlotType.MAINHAND, ItemStack.EMPTY);
-        this.hasStartedHealing = false;
+        if (golem.getHealth() == golem.getMaxHealth()) {
+            this.hasStartedHealing = false;
+            entityIn.setItemStackToSlot(EquipmentSlotType.MAINHAND, ItemStack.EMPTY);
+        }
     }
 
     @Override
     protected void startExecuting(ServerWorld worldIn, VillagerEntity entityIn, long gameTimeIn) {
         if (golem == null)
             return;
+        entityIn.setItemStackToSlot(EquipmentSlotType.MAINHAND, new ItemStack(Items.IRON_INGOT));
         this.healGolem(entityIn);
+    }
+
+    @Override
+    protected void updateTask(ServerWorld worldIn, VillagerEntity entityIn, long gameTimeIn) {
+        if (golem.getHealth() < golem.getMaxHealth())
+            this.healGolem(entityIn);
     }
 
     public void healGolem(VillagerEntity healer) {

@@ -15,7 +15,7 @@
         },
         {
           "type": "minecraft:item",
-          "name": "minecraft:leather_tunic",
+          "name": "minecraft:leather_chestplate",
           "conditions": [
             {
               "condition": "minecraft:random_chance",

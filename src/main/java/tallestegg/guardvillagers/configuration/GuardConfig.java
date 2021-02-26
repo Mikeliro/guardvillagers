@@ -36,11 +36,12 @@ public class GuardConfig {
     public static boolean ConvertVillagerIfHaveHOTV;
     public static boolean BlackSmithHealing;
     public static boolean ClericHealing;
-    public static Double GuardHealth;
-    public static Double GuardFollowRange;
-    public static Double GuardSpeed;
-    public static Double GuardVillagerHelpRange;
-    public static boolean guardRegenHealth;
+    public static double GuardHealth;
+    public static double GuardFollowRange;
+    public static double GuardSpeed;
+    public static double GuardVillagerHelpRange;
+    public static int ticksHealthRegen;
+    public static float amountOfHealthRegenerated;
     public static List<String> MobBlackList;
 
     public static void bakeConfig() {
@@ -63,7 +64,8 @@ public class GuardConfig {
         GuardFollowRange = COMMON.GuardFollowRange.get();
         GuardHealth = COMMON.GuardHealth.get();
         GuardSpeed = COMMON.GuardSpeed.get();
-        guardRegenHealth = COMMON.regenGuardHealth.get();
+        ticksHealthRegen = COMMON.ticksHealthRegen.get();
+        amountOfHealthRegenerated = COMMON.amountOfHealthRegenerated.get().floatValue();
     }
 
     @SubscribeEvent
@@ -93,7 +95,8 @@ public class GuardConfig {
         public final ForgeConfigSpec.DoubleValue GuardHealth;
         public final ForgeConfigSpec.DoubleValue GuardSpeed;
         public final ForgeConfigSpec.DoubleValue GuardFollowRange;
-        public final ForgeConfigSpec.BooleanValue regenGuardHealth;
+        public final ForgeConfigSpec.IntValue ticksHealthRegen;
+        public final ForgeConfigSpec.DoubleValue amountOfHealthRegenerated;
         public final ForgeConfigSpec.ConfigValue<List<String>> MobBlackList;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
@@ -114,10 +117,11 @@ public class GuardConfig {
             BlacksmithHealing = builder.translation(GuardVillagers.MODID + ".config.blacksmith").define("Have it so blacksmiths heal golems under 60 health?", true);
             ClericHealing = builder.translation(GuardVillagers.MODID + ".config.cleric").define("Have it so clerics heal guards and players with hero of the village?", true);
             GuardVillagerHelpRange = builder.translation(GuardVillagers.MODID + ".config.range").comment("This is the range in which the guards will be aggroed to mobs that are attacking villagers. Higher values are more resource intensive, and setting this to zero will disable the goal.").defineInRange("Range", 50.0D, -500.0D, 500.0D);
-            GuardHealth = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("Guard Health", 20.0D, -500.0D, 500.0D);
-            GuardSpeed = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("Guard speed", 0.5D, -500.0D, 500.0D);
-            GuardFollowRange = builder.translation(GuardVillagers.MODID + ".config.range").defineInRange("Guard follow range", 25.0D, -500.0D, 500.0D);
-            regenGuardHealth = builder.translation(GuardVillagers.MODID + ".config.regen").define("Have guards regenerate their health?", false);
+            GuardHealth = builder.translation(GuardVillagers.MODID + ".config.health").defineInRange("Guard Health", 20.0D, -500.0D, 500.0D);
+            GuardSpeed = builder.translation(GuardVillagers.MODID + ".config.speed").defineInRange("Guard speed", 0.5D, -500.0D, 500.0D);
+            GuardFollowRange = builder.translation(GuardVillagers.MODID + ".config.followingRange").defineInRange("Guard follow range", 25.0D, -500.0D, 500.0D);
+            ticksHealthRegen = builder.translation(GuardVillagers.MODID + ".config.ticksHealthRegen").defineInRange("The amount of ticks for a guard to regen their health.", 200, -500, 500);
+            amountOfHealthRegenerated = builder.translation(GuardVillagers.MODID + ".config.amountofHealthRegenerated").defineInRange("How much health a guard regenerates.", 1.0D, -500.0D, 500.0D);
         }
     }
 }
