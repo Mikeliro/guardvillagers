@@ -13,7 +13,7 @@ public class KickGoal extends Goal {
 
     @Override
     public boolean shouldExecute() {
-        return guard.getAttackTarget() != null && guard.getAttackTarget().getDistance(guard) <= 2.5D && guard.getHeldItemMainhand().getItem().isCrossbow(guard.getHeldItemMainhand()) && !guard.getHeldItemOffhand().isShield(guard) && guard.kickCoolDown == 0;
+        return guard.getAttackTarget() != null && guard.getAttackTarget().getDistance(guard) <= 2.5D && guard.getHeldItemMainhand().getItem().isCrossbow(guard.getHeldItemMainhand()) && !guard.isActiveItemStackBlocking() && guard.kickCoolDown == 0;
     }
 
     @Override

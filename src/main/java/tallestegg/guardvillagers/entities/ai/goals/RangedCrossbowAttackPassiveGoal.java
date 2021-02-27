@@ -63,7 +63,7 @@ public class RangedCrossbowAttackPassiveGoal<T extends CreatureEntity & IRangedA
 
     // maybe?
     public boolean checkFriendlyFire() {
-        List<GuardEntity> list = this.entity.world.getEntitiesWithinAABB(GuardEntity.class, this.entity.getBoundingBox().grow(4.0D));
+        List<GuardEntity> list = this.entity.world.getEntitiesWithinAABB(GuardEntity.class, this.entity.getBoundingBox().expand(4.0D, 1.0D, 4.0D));
         for (GuardEntity guard : list) {
             if (entity.getEntitySenses().canSee(guard) && entity != guard && !guard.isInvisible() && GuardConfig.FriendlyFire) {
                 return true;
@@ -100,7 +100,7 @@ public class RangedCrossbowAttackPassiveGoal<T extends CreatureEntity & IRangedA
             // makes the entity that has this goal backup if the attack target is 5 blocks
             // infront of them.
             if (d1 <= 5.0D) {
-                this.entity.getMoveHelper().strafe(-3.0F, 0);
+                this.entity.getMoveHelper().strafe(-3.0F, 0.0F);
                 this.entity.faceEntity(livingentity, 30.0F, 30.0F);
             }
 

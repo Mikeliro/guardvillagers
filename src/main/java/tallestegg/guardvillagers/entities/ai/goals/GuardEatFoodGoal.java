@@ -1,6 +1,11 @@
 package tallestegg.guardvillagers.entities.ai.goals;
 
+import java.util.List;
+
+import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
+import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SplashPotionItem;
 import net.minecraft.item.UseAction;
@@ -17,7 +22,7 @@ public class GuardEatFoodGoal extends Goal {
 
     @Override
     public boolean shouldExecute() {
-        return guard.getHealth() < guard.getMaxHealth() && GuardEatFoodGoal.isConsumable(guard.getHeldItemOffhand()) && guard.isEating() || guard.getHealth() < guard.getMaxHealth() && GuardEatFoodGoal.isConsumable(guard.getHeldItemOffhand()) && guard.getAttackTarget() == null;
+        return guard.getHealth() < guard.getMaxHealth() && GuardEatFoodGoal.isConsumable(guard.getHeldItemOffhand()) && guard.isEating() || guard.getHealth() < guard.getMaxHealth() && GuardEatFoodGoal.isConsumable(guard.getHeldItemOffhand()) && guard.getAttackTarget() == null && !guard.isAggressive();
     }
 
     public static boolean isConsumable(ItemStack stack) {
@@ -26,8 +31,18 @@ public class GuardEatFoodGoal extends Goal {
     
     @Override
     public boolean shouldContinueExecuting() {
-        return guard.isHandActive() && guard.getAttackTarget() == null && guard.getHealth() < guard.getMaxHealth() || guard.getAttackTarget() != null && guard.getHealth() < guard.getMaxHealth() / 2 && guard.isEating(); 
-        // Guards will only keep eating until they're up to full health if they're not hostile, otherwise they will just heal back above half health and then join back the fight.
+        List<LivingEntity> list = this.guard.world.getEntitiesWithinAABB(LivingEntity.class, this.guard.getBoundingBox().grow(5.0D, 3.0D, 5.0D));
+        if (!list.isEmpty()) {
+            for (LivingEntity mob : list) {
+                if (mob != null) {
+                    if (mob instanceof MobEntity && ((MobEntity) mob).getAttackTarget() instanceof GuardEntity) {
+                        return false;
+                    }   
+                }
+            }
+        }
+        return guard.isHandActive() && guard.getAttackTarget() == null && guard.getHealth() < guard.getMaxHealth() || guard.getAttackTarget() != null && guard.getHealth() < guard.getMaxHealth() / 2 + 2 && guard.isEating(); 
+        // Guards will only keep eating until they're up to full health if they're not aggroed, otherwise they will just heal back above half health and then join back the fight.
     }
 
     @Override

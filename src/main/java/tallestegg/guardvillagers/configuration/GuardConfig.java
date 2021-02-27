@@ -40,7 +40,6 @@ public class GuardConfig {
     public static double GuardFollowRange;
     public static double GuardSpeed;
     public static double GuardVillagerHelpRange;
-    public static int ticksHealthRegen;
     public static float amountOfHealthRegenerated;
     public static List<String> MobBlackList;
 
@@ -64,7 +63,6 @@ public class GuardConfig {
         GuardFollowRange = COMMON.GuardFollowRange.get();
         GuardHealth = COMMON.GuardHealth.get();
         GuardSpeed = COMMON.GuardSpeed.get();
-        ticksHealthRegen = COMMON.ticksHealthRegen.get();
         amountOfHealthRegenerated = COMMON.amountOfHealthRegenerated.get().floatValue();
     }
 
@@ -95,7 +93,6 @@ public class GuardConfig {
         public final ForgeConfigSpec.DoubleValue GuardHealth;
         public final ForgeConfigSpec.DoubleValue GuardSpeed;
         public final ForgeConfigSpec.DoubleValue GuardFollowRange;
-        public final ForgeConfigSpec.IntValue ticksHealthRegen;
         public final ForgeConfigSpec.DoubleValue amountOfHealthRegenerated;
         public final ForgeConfigSpec.ConfigValue<List<String>> MobBlackList;
 
@@ -120,8 +117,7 @@ public class GuardConfig {
             GuardHealth = builder.translation(GuardVillagers.MODID + ".config.health").defineInRange("Guard Health", 20.0D, -500.0D, 500.0D);
             GuardSpeed = builder.translation(GuardVillagers.MODID + ".config.speed").defineInRange("Guard speed", 0.5D, -500.0D, 500.0D);
             GuardFollowRange = builder.translation(GuardVillagers.MODID + ".config.followingRange").defineInRange("Guard follow range", 25.0D, -500.0D, 500.0D);
-            ticksHealthRegen = builder.translation(GuardVillagers.MODID + ".config.ticksHealthRegen").defineInRange("The amount of ticks for a guard to regen their health.", 200, -500, 500);
-            amountOfHealthRegenerated = builder.translation(GuardVillagers.MODID + ".config.amountofHealthRegenerated").defineInRange("How much health a guard regenerates.", 1.0D, -500.0D, 500.0D);
+            amountOfHealthRegenerated = builder.translation(GuardVillagers.MODID + ".config.amountofHealthRegenerated").comment("How much health a guard regenerates.").defineInRange("Guard health regeneration amount", 1.0D, -500.0D, 500.0D);
         }
     }
 }

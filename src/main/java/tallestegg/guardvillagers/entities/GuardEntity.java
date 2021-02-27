@@ -378,7 +378,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     @Override
     public ItemStack onFoodEaten(World world, ItemStack stack) {
         if (stack.isFood() && stack.getItem().getFood() != null) {
-            this.heal(stack.getItem().getFood().getHealing() / (float) 2); // Experimental for now, so potions get a chance too.
+            this.heal(stack.getItem().getFood().getHealing());
         }
         super.onFoodEaten(world, stack);
         world.playSound(null, this.getPosX(), this.getPosY(), this.getPosZ(), SoundEvents.ENTITY_PLAYER_BURP, SoundCategory.PLAYERS, 0.5F, world.rand.nextFloat() * 0.1F + 0.9F);
@@ -401,7 +401,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.setOwnerId(null); // TODO find a better method instead of checking every tick, using potion expiry
                                    // event instead
         }
-        if (this.getHealth() < this.getMaxHealth() && this.ticksExisted % GuardConfig.ticksHealthRegen == 0) {
+        if (this.getHealth() < this.getMaxHealth() && this.ticksExisted % 200 == 0) {
             this.heal(GuardConfig.amountOfHealthRegenerated);
         }
         if (!this.world.isRemote) {
@@ -553,9 +553,9 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (GuardConfig.GuardsRunFromPolarBears) {
             this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, PolarBearEntity.class, 12.0F, 1.0D, 1.2D));
         }
-        this.goalSelector.addGoal(3, new ReturnToVillageGoal(this, 0.6D, false));
-        this.goalSelector.addGoal(3, new PatrolVillageGoal(this, 0.6D));
-        this.goalSelector.addGoal(3, new MoveThroughVillageGoal(this, 0.6D, false, 4, () -> false));
+        this.goalSelector.addGoal(3, new ReturnToVillageGoal(this, 0.5D, false));
+        this.goalSelector.addGoal(3, new PatrolVillageGoal(this, 0.5D));
+        this.goalSelector.addGoal(3, new MoveThroughVillageGoal(this, 0.5D, false, 4, () -> false));
         if (GuardConfig.GuardsOpenDoors) {
             this.goalSelector.addGoal(3, new OpenDoorGoal(this, true) {
 
@@ -570,7 +570,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.goalSelector.addGoal(5, new FollowShieldGuards(this)); // phalanx
         }
         this.goalSelector.addGoal(8, new LookAtGoal(this, AbstractVillagerEntity.class, 8.0F));
-        this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.6D));
+        this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.5D));
         this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));
         this.targetSelector.addGoal(0, new GuardEntity.DefendVillageGuardGoal(this));
         if (!GuardConfig.GuardSurrender) {
@@ -710,6 +710,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         }
     }
 
+    @Override
     public void updateRidden() {
         super.updateRidden();
         if (this.getRidingEntity() instanceof CreatureEntity) {
@@ -739,7 +740,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     @Override
     protected ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
         if (!player.isCrouching() && this.isServerWorld() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && this.getAttackTarget() != player && this.onGround) {
-            player.swingArm(hand);
             this.openGui((ServerPlayerEntity) player);
             return ActionResultType.func_233537_a_(this.world.isRemote);
         }
@@ -1018,7 +1018,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
         @Override
         public boolean shouldExecute() {
-            return !(this.guard.getHeldItemMainhand().getItem().isCrossbow(guard.getHeldItemMainhand())) && this.guard.getAttackTarget() != null && !this.guard.isEating() && super.shouldExecute();
+            return !(this.guard.getHeldItemMainhand().getItem() instanceof CrossbowItem) && this.guard.getAttackTarget() != null && !this.guard.isEating() && super.shouldExecute();
         }
 
         @Override
@@ -1028,7 +1028,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
         @Override
         public void tick() {
-            if (this.guard.getAttackTarget() != null) {
+            LivingEntity target = guard.getAttackTarget();
+            if (target != null) {
+                if (target.getDistance(guard) <= this.getAttackReachSqr(target) + 2.0D) {
+                    guard.getMoveHelper().strafe(-3.0F, 0.0F);
+                    guard.faceEntity(target, 30.0F, 30.0F);
+                }
                 super.tick();
             }
         }
