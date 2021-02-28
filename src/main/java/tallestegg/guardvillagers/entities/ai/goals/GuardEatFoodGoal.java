@@ -5,7 +5,6 @@ import java.util.List;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.ai.goal.Goal;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.SplashPotionItem;
 import net.minecraft.item.UseAction;
@@ -37,7 +36,7 @@ public class GuardEatFoodGoal extends Goal {
                 if (mob != null) {
                     if (mob instanceof MobEntity && ((MobEntity) mob).getAttackTarget() instanceof GuardEntity) {
                         return false;
-                    }   
+                    }  
                 }
             }
         }

@@ -1030,9 +1030,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         public void tick() {
             LivingEntity target = guard.getAttackTarget();
             if (target != null) {
-                if (target.getDistance(guard) <= this.getAttackReachSqr(target) + 2.0D) {
-                    guard.getMoveHelper().strafe(-3.0F, 0.0F);
+                if (target.getDistance(guard) <= 3.0D) {
+                    guard.getMoveHelper().strafe(-2.0F, 0.0F);
                     guard.faceEntity(target, 30.0F, 30.0F);
+                }
+                if (path != null && target.getDistance(guard) <= 2.0D) {
+                    guard.getNavigator().setPath(null, 0);
                 }
                 super.tick();
             }
