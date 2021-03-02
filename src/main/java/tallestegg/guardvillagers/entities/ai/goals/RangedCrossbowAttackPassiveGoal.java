@@ -11,6 +11,7 @@ import net.minecraft.entity.Pose;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
+import net.minecraft.util.math.vector.Vector3d;
 import tallestegg.guardvillagers.GuardItems;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
@@ -63,13 +64,17 @@ public class RangedCrossbowAttackPassiveGoal<T extends CreatureEntity & IRangedA
 
     // maybe?
     public boolean checkFriendlyFire() {
-        List<GuardEntity> list = this.entity.world.getEntitiesWithinAABB(GuardEntity.class, this.entity.getBoundingBox().expand(4.0D, 1.0D, 4.0D));
+        List<GuardEntity> list = this.entity.world.getEntitiesWithinAABB(GuardEntity.class, this.entity.getBoundingBox().grow(4.0D, 1.0D, 4.0D));
         for (GuardEntity guard : list) {
-            if (entity.getEntitySenses().canSee(guard) && entity != guard && !guard.isInvisible() && GuardConfig.FriendlyFire) {
-                return true;
+            if (entity != guard || guard != entity) {
+                Vector3d vector3d = entity.getLook(1.0F);
+                Vector3d vector3d1 = guard.getPositionVec().subtractReverse(entity.getPositionVec()).normalize();
+                vector3d1 = new Vector3d(vector3d1.x, 0.0D, vector3d1.z);
+                if (vector3d1.dotProduct(vector3d) < 0.0D && entity.canEntityBeSeen(guard))
+                    return true;
             }
         }
-        return false;
+        return GuardConfig.FriendlyFire;
     }
 
     public void tick() {

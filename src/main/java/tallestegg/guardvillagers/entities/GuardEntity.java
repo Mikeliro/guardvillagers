@@ -988,9 +988,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                     PlayerEntity player = (PlayerEntity) mob;
                     if (!player.isInvisible() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE)) {
                         guard.setOwnerId(player.getUniqueID());
-                        if (guard.isFollowing()) {
-                            return true;
-                        }
+                        return guard.isFollowing();
                     }
                 }
             }
@@ -1035,7 +1033,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                     guard.faceEntity(target, 30.0F, 30.0F);
                 }
                 if (path != null && target.getDistance(guard) <= 2.0D) {
-                    guard.getNavigator().setPath(null, 0);
+                    guard.getNavigator().clearPath();
                 }
                 super.tick();
             }
