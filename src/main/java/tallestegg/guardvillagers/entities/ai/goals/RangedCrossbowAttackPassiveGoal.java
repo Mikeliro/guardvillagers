@@ -4,6 +4,7 @@ import java.util.EnumSet;
 import java.util.List;
 
 import net.minecraft.entity.CreatureEntity;
+import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ICrossbowUser;
 import net.minecraft.entity.IRangedAttackMob;
 import net.minecraft.entity.LivingEntity;
@@ -12,6 +13,7 @@ import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.math.vector.Vector3d;
+import tallestegg.guardvillagers.GuardEntityType;
 import tallestegg.guardvillagers.GuardItems;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
@@ -62,19 +64,23 @@ public class RangedCrossbowAttackPassiveGoal<T extends CreatureEntity & IRangedA
         }
     }
 
-    // maybe?
     public boolean checkFriendlyFire() {
-        List<GuardEntity> list = this.entity.world.getEntitiesWithinAABB(GuardEntity.class, this.entity.getBoundingBox().grow(4.0D, 1.0D, 4.0D));
-        for (GuardEntity guard : list) {
+        List<LivingEntity> list = this.entity.world.getEntitiesWithinAABB(LivingEntity.class, this.entity.getBoundingBox().grow(4.0D, 1.0D, 4.0D));
+        for (LivingEntity guard : list) {
             if (entity != guard || guard != entity) {
-                Vector3d vector3d = entity.getLook(1.0F);
-                Vector3d vector3d1 = guard.getPositionVec().subtractReverse(entity.getPositionVec()).normalize();
-                vector3d1 = new Vector3d(vector3d1.x, 0.0D, vector3d1.z);
-                if (vector3d1.dotProduct(vector3d) < 0.0D && entity.canEntityBeSeen(guard))
-                    return true;
+                if (guard != entity.getAttackTarget()) {
+                    boolean isVillager = guard.getType() == EntityType.VILLAGER || guard.getType() == GuardEntityType.GUARD.get() || guard.getType() == EntityType.IRON_GOLEM;
+                    if (isVillager) {
+                        Vector3d vector3d = entity.getLook(1.0F);
+                        Vector3d vector3d1 = guard.getPositionVec().subtractReverse(entity.getPositionVec()).normalize();
+                        vector3d1 = new Vector3d(vector3d1.x, 0.0D, vector3d1.z);
+                        if (vector3d1.dotProduct(vector3d) < 0.0D && entity.canEntityBeSeen(guard))
+                            return GuardConfig.FriendlyFire;
+                    }
+                }
             }
         }
-        return GuardConfig.FriendlyFire;
+        return false;
     }
 
     public void tick() {

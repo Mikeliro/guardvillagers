@@ -70,7 +70,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.MilkBucketItem;
 import net.minecraft.item.PotionItem;
-import net.minecraft.item.ShieldItem;
 import net.minecraft.item.ShootableItem;
 import net.minecraft.item.SplashPotionItem;
 import net.minecraft.loot.LootContext;
@@ -535,21 +534,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.goalSelector.addGoal(2, new RangedBowAttackPassiveGoal<>(this, 0.5D, 20, 15.0F));
         this.goalSelector.addGoal(2, new GuardEntity.GuardMeleeGoal(this, 0.8D, true));
         this.goalSelector.addGoal(3, new GuardEntity.FollowHeroGoal(this));
-        if (GuardConfig.GuardSurrender) {
-            this.goalSelector.addGoal(2, new AvoidEntityGoal<RavagerEntity>(this, RavagerEntity.class, 12.0F, 1.0D, 1.2D) {
-                @Override
-                public boolean shouldExecute() {
-                    return this.entity.getHealth() <= 14 && !(entity.getHeldItemOffhand().getItem() instanceof ShieldItem) && super.shouldExecute();
-                }
-
-                @Override
-                public void startExecuting() {
-                    if (this.entity.getAttackTarget() == this.avoidTarget) {
-                        this.entity.setAttackTarget(null);
-                    }
-                }
-            });
-        }
         if (GuardConfig.GuardsRunFromPolarBears) {
             this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, PolarBearEntity.class, 12.0F, 1.0D, 1.2D));
         }
@@ -558,7 +542,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.goalSelector.addGoal(3, new MoveThroughVillageGoal(this, 0.5D, false, 4, () -> false));
         if (GuardConfig.GuardsOpenDoors) {
             this.goalSelector.addGoal(3, new OpenDoorGoal(this, true) {
-
                 @Override
                 public void startExecuting() {
                     super.startExecuting();
@@ -573,17 +556,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.5D));
         this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));
         this.targetSelector.addGoal(0, new GuardEntity.DefendVillageGuardGoal(this));
-        if (!GuardConfig.GuardSurrender) {
-            this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, RavagerEntity.class, true));
-        }
-        if (GuardConfig.GuardSurrender) {
-            this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<RavagerEntity>(this, RavagerEntity.class, true) {
-                @Override
-                public boolean shouldExecute() {
-                    return this.goalOwner.getHealth() > 14 && super.shouldExecute();
-                }
-            });
-        }
+        this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, RavagerEntity.class, true));
         this.targetSelector.addGoal(2, (new HurtByTargetGoal(this, GuardEntity.class, IronGolemEntity.class)).setCallsForHelp());
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WitchEntity.class, true));
         this.targetSelector.addGoal(3, new HeroHurtByTargetGoal(this));
@@ -739,11 +712,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     protected ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
-        if (!player.isCrouching() && this.isServerWorld() && player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && this.getAttackTarget() != player && this.onGround) {
+        boolean hotv = player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.needHOTVToOpenGuardInventory || !GuardConfig.needHOTVToOpenGuardInventory && !player.isCrouching();
+        if (!player.isCrouching() && this.isServerWorld() && hotv && this.getAttackTarget() != player && this.onGround) {
             this.openGui((ServerPlayerEntity) player);
             return ActionResultType.func_233537_a_(this.world.isRemote);
         }
-        return player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) ? ActionResultType.SUCCESS : ActionResultType.PASS;
+        return hotv ? ActionResultType.SUCCESS : ActionResultType.PASS;
     }
 
     @Override

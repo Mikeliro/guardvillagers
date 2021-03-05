@@ -25,7 +25,6 @@ public class GuardConfig {
     public static boolean WitchesVillager;
     public static boolean IllusionerRaids;
     public static boolean AttackAllMobs;
-    public static boolean GuardSurrender;
     public static boolean VillagersRunFromPolarBears;
     public static boolean IllagersRunFromPolarBears;
     public static boolean GuardsRunFromPolarBears;
@@ -41,6 +40,8 @@ public class GuardConfig {
     public static double GuardSpeed;
     public static double GuardVillagerHelpRange;
     public static float amountOfHealthRegenerated;
+    public static boolean needHOTVToOpenGuardInventory;
+    public static boolean guardArrowsHurtVillagers;
     public static List<String> MobBlackList;
 
     public static void bakeConfig() {
@@ -48,7 +49,6 @@ public class GuardConfig {
         WitchesVillager = COMMON.WitchesVillager.get();
         IllusionerRaids = COMMON.IllusionerRaids.get();
         AttackAllMobs = COMMON.AttackAllMobs.get();
-        GuardSurrender = COMMON.GuardSurrender.get();
         VillagersRunFromPolarBears = COMMON.VillagersRunFromPolarBears.get();
         IllagersRunFromPolarBears = COMMON.IllagersRunFromPolarBears.get();
         GuardsOpenDoors = COMMON.GuardsOpenDoors.get();
@@ -64,6 +64,8 @@ public class GuardConfig {
         GuardHealth = COMMON.GuardHealth.get();
         GuardSpeed = COMMON.GuardSpeed.get();
         amountOfHealthRegenerated = COMMON.amountOfHealthRegenerated.get().floatValue();
+        needHOTVToOpenGuardInventory = COMMON.needHOTVToOpenGuardInventory.get();
+        guardArrowsHurtVillagers = COMMON.guardArrowsHurtVillagers.get();
     }
 
     @SubscribeEvent
@@ -78,7 +80,6 @@ public class GuardConfig {
         public final ForgeConfigSpec.BooleanValue WitchesVillager;
         public final ForgeConfigSpec.BooleanValue IllusionerRaids;
         public final ForgeConfigSpec.BooleanValue AttackAllMobs;
-        public final ForgeConfigSpec.BooleanValue GuardSurrender;
         public final ForgeConfigSpec.BooleanValue VillagersRunFromPolarBears;
         public final ForgeConfigSpec.BooleanValue IllagersRunFromPolarBears;
         public final ForgeConfigSpec.BooleanValue GuardsRunFromPolarBears;
@@ -94,30 +95,36 @@ public class GuardConfig {
         public final ForgeConfigSpec.DoubleValue GuardSpeed;
         public final ForgeConfigSpec.DoubleValue GuardFollowRange;
         public final ForgeConfigSpec.DoubleValue amountOfHealthRegenerated;
+        public final ForgeConfigSpec.BooleanValue needHOTVToOpenGuardInventory;
+        public final ForgeConfigSpec.BooleanValue guardArrowsHurtVillagers;
         public final ForgeConfigSpec.ConfigValue<List<String>> MobBlackList;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
             RaidAnimals = builder.comment("Illagers In Raids Attack Animals?").translation(GuardVillagers.MODID + ".config.RaidAnimals").define("Illagers in raids attack animals?", false);
             WitchesVillager = builder.comment("Witches Attack Villagers?").translation(GuardVillagers.MODID + ".config.WitchesVillager").define("Witches attack villagers?", true);
-            IllusionerRaids = builder.comment("This will make Illusioners get involved in raids").translation(GuardVillagers.MODID + ".config.IllusionerRaids").define("Have Illusioners in raids?", true);
+            IllusionerRaids = builder.comment("This will make Illusioners get involved in raids").translation(GuardVillagers.MODID + ".config.IllusionerRaids").define("Have illusioners in raids?", true);
             AttackAllMobs = builder.comment("Guards will attack all hostiles with this option").translation(GuardVillagers.MODID + ".config.AttackAllMobs").define("Guards attack all mobs?", false);
             MobBlackList = builder.comment("Guards won't attack mobs in this list if AttackAllMobs is enabled, for example, putting minecraft:creeper in this list will make guards ignore creepers.").define("Mob BlackList", new ArrayList<>());
-            GuardSurrender = builder.comment("This option makes guards run from ravagers when low on health").translation(GuardVillagers.MODID + ".config.GuardSurrender").define("Have Guards be run from ravagers when on low health?", true);
             VillagersRunFromPolarBears = builder.comment("This makes villagers run from polar bears, as anyone with common sense would.").translation(GuardVillagers.MODID + ".config.VillagersRunFromPolarBears").define("Have Villagers have some common sense?", true);
             IllagersRunFromPolarBears = builder.comment("This makes Illagers run from polar bears, as anyone with common sense would.").translation(GuardVillagers.MODID + ".config.IllagersRunFromPolarBears").define("Have Illagers have some common sense?", true);
             GuardsRunFromPolarBears = builder.comment("This makes Guards run from polar bears, as anyone with common sense would.").translation(GuardVillagers.MODID + ".config.IllagersRunFromPolarBears").define("Have Guards have some common sense?", false);
             GuardsOpenDoors = builder.comment("This lets Guards open doors.").translation(GuardVillagers.MODID + ".config.GuardsOpenDoors").define("Have Guards open doors?", true);
-            GuardRaiseShield = builder.comment("This will make guards raise their shields all the time, on default they will only raise their shields under certain conditions").translation(GuardVillagers.MODID + ".config.GuardRaiseShield").define("Have Guards raise their shield all the time?", false);
+            GuardRaiseShield = builder.comment("This will make guards raise their shields all the time, on default they will only raise their shields under certain conditions").translation(GuardVillagers.MODID + ".config.GuardRaiseShield").define("Have Guards raise their shield all the time?",
+                    false);
             GuardFormation = builder.comment("This makes guards form a phalanx").translation(GuardVillagers.MODID + ".config.GuardFormation").define("Have guards form a phalanx?", true);
-            FriendlyFire = builder.comment("This will make guards attempt to avoid friendly fire.").translation(GuardVillagers.MODID + ".config.FriendlyFire").define("Have guards avoid friendly fire? (Experimental)", false);
-            ConvertVillagerIfHaveHOTV = builder.comment("This will make it so villagers will only be converted into guards if the player has hero of the village").translation(GuardVillagers.MODID + ".config.hotv").define("Make it so players have to have hero of the village to convert villagers into guards?", false);
+            FriendlyFire = builder.comment("This will make guards attempt to avoid friendly fire.").translation(GuardVillagers.MODID + ".config.FriendlyFire").define("Have guards attempt to avoid firing into other friendlies? (Experimental)", false);
+            ConvertVillagerIfHaveHOTV = builder.comment("This will make it so villagers will only be converted into guards if the player has hero of the village").translation(GuardVillagers.MODID + ".config.hotv")
+                    .define("Make it so players have to have hero of the village to convert villagers into guards?", false);
             BlacksmithHealing = builder.translation(GuardVillagers.MODID + ".config.blacksmith").define("Have it so blacksmiths heal golems under 60 health?", true);
             ClericHealing = builder.translation(GuardVillagers.MODID + ".config.cleric").define("Have it so clerics heal guards and players with hero of the village?", true);
-            GuardVillagerHelpRange = builder.translation(GuardVillagers.MODID + ".config.range").comment("This is the range in which the guards will be aggroed to mobs that are attacking villagers. Higher values are more resource intensive, and setting this to zero will disable the goal.").defineInRange("Range", 50.0D, -500.0D, 500.0D);
+            GuardVillagerHelpRange = builder.translation(GuardVillagers.MODID + ".config.range").comment("This is the range in which the guards will be aggroed to mobs that are attacking villagers. Higher values are more resource intensive, and setting this to zero will disable the goal.")
+                    .defineInRange("Range", 50.0D, -500.0D, 500.0D);
             GuardHealth = builder.translation(GuardVillagers.MODID + ".config.health").defineInRange("Guard Health", 20.0D, -500.0D, 500.0D);
             GuardSpeed = builder.translation(GuardVillagers.MODID + ".config.speed").defineInRange("Guard speed", 0.5D, -500.0D, 500.0D);
             GuardFollowRange = builder.translation(GuardVillagers.MODID + ".config.followingRange").defineInRange("Guard follow range", 25.0D, -500.0D, 500.0D);
             amountOfHealthRegenerated = builder.translation(GuardVillagers.MODID + ".config.amountofHealthRegenerated").comment("How much health a guard regenerates.").defineInRange("Guard health regeneration amount", 1.0D, -500.0D, 500.0D);
+            needHOTVToOpenGuardInventory = builder.translation(GuardVillagers.MODID + ".config.needHOTVToOpenGuardInventory").define("Allow players to only open the guard's inventory if you have hero of the village?", true);
+            guardArrowsHurtVillagers = builder.translation(GuardVillagers.MODID + ".config.guardArrows").define("Allow guard arrows to damage villagers, iron golems, or other guards?", false);
         }
     }
 }

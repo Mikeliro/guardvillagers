@@ -13,6 +13,7 @@ import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.potion.Effects;
 import net.minecraft.util.ResourceLocation;
+import tallestegg.guardvillagers.configuration.GuardConfig;
 
 public class GuardContainer extends Container {
     private final IInventory guardInventory;
@@ -33,7 +34,7 @@ public class GuardContainer extends Container {
             public int getSlotStackLimit() {
                 return 1;
             }
-            
+
             @Override
             public void putStack(ItemStack stack) {
                 super.putStack(stack);
@@ -55,7 +56,7 @@ public class GuardContainer extends Container {
             public int getSlotStackLimit() {
                 return 1;
             }
-            
+
             @Override
             public void putStack(ItemStack stack) {
                 super.putStack(stack);
@@ -77,7 +78,7 @@ public class GuardContainer extends Container {
             public int getSlotStackLimit() {
                 return 1;
             }
-            
+
             @Override
             public void putStack(ItemStack stack) {
                 super.putStack(stack);
@@ -99,7 +100,7 @@ public class GuardContainer extends Container {
             public int getSlotStackLimit() {
                 return 1;
             }
-            
+
             @Override
             public void putStack(ItemStack stack) {
                 super.putStack(stack);
@@ -123,7 +124,7 @@ public class GuardContainer extends Container {
                 return Pair.of(PlayerContainer.LOCATION_BLOCKS_TEXTURE, PlayerContainer.EMPTY_ARMOR_SLOT_SHIELD);
             }
         });
-        
+
         this.addSlot(new Slot(guardInventory, 5, 77, 44) {
             @Override
             public void putStack(ItemStack stack) {
@@ -144,7 +145,8 @@ public class GuardContainer extends Container {
 
     @Override
     public boolean canInteractWith(PlayerEntity playerIn) {
-        return this.guardInventory.isUsableByPlayer(playerIn) && this.guard.isAlive() && this.guard.getDistance(playerIn) < 8.0F && playerIn.isPotionActive(Effects.HERO_OF_THE_VILLAGE);
+        boolean hotv = playerIn.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.needHOTVToOpenGuardInventory || !GuardConfig.needHOTVToOpenGuardInventory;
+        return this.guardInventory.isUsableByPlayer(playerIn) && this.guard.isAlive() && this.guard.getDistance(playerIn) < 8.0F && hotv;
     }
 
     @Override
