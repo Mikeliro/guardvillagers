@@ -42,6 +42,7 @@ public class GuardConfig {
     public static float amountOfHealthRegenerated;
     public static boolean needHOTVToOpenGuardInventory;
     public static boolean guardArrowsHurtVillagers;
+    public static boolean armorerRepairGuardArmor;
     public static List<String> MobBlackList;
 
     public static void bakeConfig() {
@@ -66,6 +67,7 @@ public class GuardConfig {
         amountOfHealthRegenerated = COMMON.amountOfHealthRegenerated.get().floatValue();
         needHOTVToOpenGuardInventory = COMMON.needHOTVToOpenGuardInventory.get();
         guardArrowsHurtVillagers = COMMON.guardArrowsHurtVillagers.get();
+        armorerRepairGuardArmor = COMMON.armorersRepairGuardArmor.get();
     }
 
     @SubscribeEvent
@@ -97,6 +99,7 @@ public class GuardConfig {
         public final ForgeConfigSpec.DoubleValue amountOfHealthRegenerated;
         public final ForgeConfigSpec.BooleanValue needHOTVToOpenGuardInventory;
         public final ForgeConfigSpec.BooleanValue guardArrowsHurtVillagers;
+        public final ForgeConfigSpec.BooleanValue armorersRepairGuardArmor;
         public final ForgeConfigSpec.ConfigValue<List<String>> MobBlackList;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
@@ -124,7 +127,8 @@ public class GuardConfig {
             GuardFollowRange = builder.translation(GuardVillagers.MODID + ".config.followingRange").defineInRange("Guard follow range", 25.0D, -500.0D, 500.0D);
             amountOfHealthRegenerated = builder.translation(GuardVillagers.MODID + ".config.amountofHealthRegenerated").comment("How much health a guard regenerates.").defineInRange("Guard health regeneration amount", 1.0D, -500.0D, 500.0D);
             needHOTVToOpenGuardInventory = builder.translation(GuardVillagers.MODID + ".config.needHOTVToOpenGuardInventory").define("Allow players to only open the guard's inventory if you have hero of the village?", true);
-            guardArrowsHurtVillagers = builder.translation(GuardVillagers.MODID + ".config.guardArrows").define("Allow guard arrows to damage villagers, iron golems, or other guards?", false);
+            guardArrowsHurtVillagers = builder.translation(GuardVillagers.MODID + ".config.guardArrows").define("Allow guard arrows to damage villagers, iron golems, or other guards?", true);
+            armorersRepairGuardArmor = builder.translation(GuardVillagers.MODID + ".config.armorvillager").define("Allow armorers and weaponsmiths repair guard items when down a certain percent?", true);
         }
     }
 }

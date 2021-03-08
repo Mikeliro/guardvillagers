@@ -59,8 +59,9 @@ public class HandlerEvents {
             return;
         boolean isVillager = entity.getType() == EntityType.VILLAGER || entity.getType() == GuardEntityType.GUARD.get();
         boolean isGolem = isVillager || entity.getType() == EntityType.IRON_GOLEM;
-        if (isGolem && trueSource.getType() == GuardEntityType.GUARD.get() && GuardConfig.guardArrowsHurtVillagers)
+        if (isGolem && trueSource.getType() == GuardEntityType.GUARD.get() && !GuardConfig.guardArrowsHurtVillagers) {
             event.setAmount(0.0F);
+        }
         if (isVillager && event.getSource().getTrueSource() instanceof MobEntity) {
             List<MobEntity> list = trueSource.world.getEntitiesWithinAABB(MobEntity.class, trueSource.getBoundingBox().grow(GuardConfig.GuardVillagerHelpRange, 5.0D, GuardConfig.GuardVillagerHelpRange));
             for (MobEntity mob : list) {

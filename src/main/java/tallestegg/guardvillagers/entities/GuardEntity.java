@@ -113,6 +113,7 @@ import tallestegg.guardvillagers.GuardItems;
 import tallestegg.guardvillagers.GuardLootTables;
 import tallestegg.guardvillagers.GuardPacketHandler;
 import tallestegg.guardvillagers.configuration.GuardConfig;
+import tallestegg.guardvillagers.entities.ai.goals.ArmorerRepairGuardArmorGoal;
 import tallestegg.guardvillagers.entities.ai.goals.FollowShieldGuards;
 import tallestegg.guardvillagers.entities.ai.goals.GuardEatFoodGoal;
 import tallestegg.guardvillagers.entities.ai.goals.GuardFindCoverGoal;
@@ -122,6 +123,7 @@ import tallestegg.guardvillagers.entities.ai.goals.KickGoal;
 import tallestegg.guardvillagers.entities.ai.goals.RaiseShieldGoal;
 import tallestegg.guardvillagers.entities.ai.goals.RangedBowAttackPassiveGoal;
 import tallestegg.guardvillagers.entities.ai.goals.RangedCrossbowAttackPassiveGoal;
+import tallestegg.guardvillagers.entities.ai.goals.RunToClericGoal;
 import tallestegg.guardvillagers.networking.GuardOpenInventoryPacket;
 
 public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRangedAttackMob, IAngerable, IInventoryChangedListener {
@@ -292,29 +294,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                 itemstack.write(compoundnbt);
                 listnbt.add(compoundnbt);
             }
-            EquipmentSlotType slot = MobEntity.getSlotForItemStack(itemstack);
-            switch (i) {
-            case 0:
-                this.inventoryArmor.set(slot.getIndex(), itemstack);
-                break;
-            case 1:
-                this.inventoryArmor.set(slot.getIndex(), itemstack);
-                break;
-            case 2:
-                this.inventoryArmor.set(slot.getIndex(), itemstack);
-                break;
-            case 3:
-                this.inventoryArmor.set(slot.getIndex(), itemstack);
-                break;
-            case 4:
-                this.inventoryHands.set(1, itemstack);
-                break;
-            case 5:
-                this.inventoryHands.set(0, itemstack);
-                break;
-            default:
-                break;
-            }
         }
         compound.put("Inventory", listnbt);
         this.writeAngerNBT(compound);
@@ -403,9 +382,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (this.getHealth() < this.getMaxHealth() && this.ticksExisted % 200 == 0) {
             this.heal(GuardConfig.amountOfHealthRegenerated);
         }
-        if (!this.world.isRemote) {
+        if (!this.world.isRemote)
             this.func_241359_a_((ServerWorld) this.world, true);
-        }
         this.updateArmSwingProgress();
         super.livingTick();
     }
@@ -534,13 +512,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.goalSelector.addGoal(2, new RangedBowAttackPassiveGoal<>(this, 0.5D, 20, 15.0F));
         this.goalSelector.addGoal(2, new GuardEntity.GuardMeleeGoal(this, 0.8D, true));
         this.goalSelector.addGoal(3, new GuardEntity.FollowHeroGoal(this));
-        if (GuardConfig.GuardsRunFromPolarBears) {
+        if (GuardConfig.GuardsRunFromPolarBears)
             this.goalSelector.addGoal(3, new AvoidEntityGoal<>(this, PolarBearEntity.class, 12.0F, 1.0D, 1.2D));
-        }
         this.goalSelector.addGoal(3, new ReturnToVillageGoal(this, 0.5D, false));
         this.goalSelector.addGoal(3, new PatrolVillageGoal(this, 0.5D));
         this.goalSelector.addGoal(3, new MoveThroughVillageGoal(this, 0.5D, false, 4, () -> false));
-        if (GuardConfig.GuardsOpenDoors) {
+        if (GuardConfig.GuardsOpenDoors)
             this.goalSelector.addGoal(3, new OpenDoorGoal(this, true) {
                 @Override
                 public void startExecuting() {
@@ -548,10 +525,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                     this.entity.swingArm(Hand.MAIN_HAND);
                 }
             });
-        }
-        if (GuardConfig.GuardFormation) {
+        if (GuardConfig.GuardFormation)
             this.goalSelector.addGoal(5, new FollowShieldGuards(this)); // phalanx
-        }
+        if (GuardConfig.ClericHealing)
+            this.goalSelector.addGoal(6, new RunToClericGoal(this));
+        if (GuardConfig.armorerRepairGuardArmor)
+            this.goalSelector.addGoal(6, new ArmorerRepairGuardArmorGoal(this));
         this.goalSelector.addGoal(8, new LookAtGoal(this, AbstractVillagerEntity.class, 8.0F));
         this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.5D));
         this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));

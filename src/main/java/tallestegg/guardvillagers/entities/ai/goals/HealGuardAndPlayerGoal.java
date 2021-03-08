@@ -98,10 +98,10 @@ public class HealGuardAndPlayerGoal extends Goal {
         } else {
             this.healer.getNavigator().tryMoveToEntityLiving(this.healer, this.entityMoveSpeed);
         }
-        if (mob.getDistance(healer) <= 5.0D) {
+        if (mob.getDistance(healer) <= 3.0D) {
             healer.getMoveHelper().strafe(-0.5F, 0);
         }
-        if (--this.rangedAttackTime == 0 && mob.getHealth() < mob.getMaxHealth() && mob.isAlive() && healer.getDistance(mob) >= 5.0D) {
+        if (--this.rangedAttackTime == 0 && mob.getHealth() < mob.getMaxHealth() && mob.isAlive()) {
             if (!flag) {
                 return;
             }
@@ -109,7 +109,7 @@ public class HealGuardAndPlayerGoal extends Goal {
             float lvt_5_1_ = MathHelper.clamp(f, 0.1F, 0.5F);
             this.throwPotion(mob, lvt_5_1_);
             this.rangedAttackTime = MathHelper.floor(f * (float) (this.maxRangedAttackTime - this.attackIntervalMin) + (float) this.attackIntervalMin);
-        } else if (this.rangedAttackTime < 0 && healer.getDistance(mob) <= 5.0D) {
+        } else if (this.rangedAttackTime < 0) {
             float f2 = MathHelper.sqrt(d0) / this.attackRadius;
             this.rangedAttackTime = MathHelper.floor(f2 * (float) (this.maxRangedAttackTime - this.attackIntervalMin) + (float) this.attackIntervalMin);
         }
