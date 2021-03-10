@@ -90,12 +90,17 @@ public class HandlerEvents {
             illager.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(illager, GuardEntity.class, false));
             if (GuardConfig.IllagersRunFromPolarBears) {
                 illager.goalSelector.addGoal(2, new AvoidEntityGoal<>(illager, PolarBearEntity.class, 6.0F, 1.0D, 1.2D));
-            } // common sense.
+            }
             if (GuardConfig.RaidAnimals) {
                 if (illager.isRaidActive()) {
                     illager.targetSelector.addGoal(5, new NearestAttackableTargetGoal<>(illager, AnimalEntity.class, false));
                 }
             }
+        }
+
+        if (event.getEntity() instanceof GuardEntity) {
+            GuardEntity guard = (GuardEntity) event.getEntity();
+            guard.setCanPickUpLoot(false); // This will be deleted when I port to 1.17.
         }
 
         if (event.getEntity() instanceof AbstractVillagerEntity) {
@@ -109,7 +114,7 @@ public class HandlerEvents {
         if (event.getEntity() instanceof VillagerEntity) {
             VillagerEntity villager = (VillagerEntity) event.getEntity();
             if (GuardConfig.BlackSmithHealing)
-                villager.goalSelector.addGoal(1, new HealGolemGoal(villager)); // TODO mixin into the villagers brain and make these tasks instead of goals.
+                villager.goalSelector.addGoal(1, new HealGolemGoal(villager));
             if (GuardConfig.ClericHealing)
                 villager.goalSelector.addGoal(1, new HealGuardAndPlayerGoal(villager, 1.0D, 100, 0, 10.0F));
         }

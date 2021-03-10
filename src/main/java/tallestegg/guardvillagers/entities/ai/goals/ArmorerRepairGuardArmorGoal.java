@@ -37,7 +37,6 @@ public class ArmorerRepairGuardArmorGoal extends Goal {
                         if (mob.getVillagerData().getProfession() == VillagerProfession.WEAPONSMITH) {
                             for (int i = 4; i < 6; ++i) {
                                 ItemStack itemstack = guard.guardInventory.getStackInSlot(i);
-                                System.out.println(itemstack.isDamaged() && itemstack.getDamage() >= itemstack.getMaxDamage() / 2);
                                 if (itemstack.isDamaged() && itemstack.getDamage() >= itemstack.getMaxDamage() / 2) {
                                     this.villager = mob;
                                     return true;

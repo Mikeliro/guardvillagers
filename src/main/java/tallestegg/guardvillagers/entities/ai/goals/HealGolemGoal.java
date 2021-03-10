@@ -15,7 +15,6 @@ import net.minecraft.item.Items;
 import net.minecraft.util.Hand;
 import net.minecraft.util.SoundEvents;
 
-//TODO make this a task instead of a goal.
 public class HealGolemGoal extends Goal {
     public final MobEntity healer;
     public IronGolemEntity golem;
