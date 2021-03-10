@@ -2,7 +2,6 @@ package tallestegg.guardvillagers.entities.ai.goals;
 
 import net.minecraft.entity.IRangedAttackMob;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.ai.attributes.Attributes;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.monster.CreeperEntity;
 import net.minecraft.entity.monster.RavagerEntity;
@@ -23,7 +22,8 @@ public class RaiseShieldGoal extends Goal {
 
     @Override
     public boolean shouldExecute() {
-        return !CrossbowItem.isCharged(guard.getHeldItemMainhand()) && guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard) && raiseShield() && guard.shieldCoolDown == 0 && !guard.getHeldItemOffhand().getItem().equals(ForgeRegistries.ITEMS.getValue(new ResourceLocation("bigbrain:buckler")));
+        return !CrossbowItem.isCharged(guard.getHeldItemMainhand()) && guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard) && raiseShield() && guard.shieldCoolDown == 0
+                && !guard.getHeldItemOffhand().getItem().equals(ForgeRegistries.ITEMS.getValue(new ResourceLocation("bigbrain:buckler")));
     }
 
     @Override
@@ -33,27 +33,14 @@ public class RaiseShieldGoal extends Goal {
 
     @Override
     public void startExecuting() {
-        if (guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard)) {
+        if (guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard))
             guard.setActiveHand(Hand.OFF_HAND);
-            guard.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.3F);
-        }
-    }
-
-    @Override
-    public void tick() {
-        if (guard.getActiveHand() == Hand.OFF_HAND) {
-            guard.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.3F);
-        } else {
-            guard.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.5D);
-        }
     }
 
     @Override
     public void resetTask() {
-        if (!GuardConfig.GuardAlwaysShield) {
+        if (!GuardConfig.GuardAlwaysShield)
             guard.resetActiveHand();
-            guard.getAttribute(Attributes.MOVEMENT_SPEED).setBaseValue(0.5D);
-        }
     }
 
     protected boolean raiseShield() {

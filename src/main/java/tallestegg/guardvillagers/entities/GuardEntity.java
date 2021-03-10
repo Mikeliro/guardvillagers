@@ -26,8 +26,10 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
 import net.minecraft.entity.Pose;
 import net.minecraft.entity.SpawnReason;
+import net.minecraft.entity.ai.attributes.AttributeModifier;
 import net.minecraft.entity.ai.attributes.AttributeModifierMap;
 import net.minecraft.entity.ai.attributes.Attributes;
+import net.minecraft.entity.ai.attributes.ModifiableAttributeInstance;
 import net.minecraft.entity.ai.goal.AvoidEntityGoal;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.ai.goal.HurtByTargetGoal;
@@ -127,6 +129,8 @@ import tallestegg.guardvillagers.entities.ai.goals.RunToClericGoal;
 import tallestegg.guardvillagers.networking.GuardOpenInventoryPacket;
 
 public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRangedAttackMob, IAngerable, IInventoryChangedListener {
+    private static final UUID MODIFIER_UUID = UUID.fromString("5CD17E52-A79A-43D3-A529-90FDE04B181E");
+    private static final AttributeModifier USE_ITEM_SPEED_PENALTY = new AttributeModifier(MODIFIER_UUID, "Use item speed penalty", -0.25D, AttributeModifier.Operation.ADDITION);
     private static final DataParameter<Integer> GUARD_VARIANT = EntityDataManager.createKey(GuardEntity.class, DataSerializers.VARINT);
     private static final DataParameter<Boolean> DATA_CHARGING_STATE = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> EATING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
@@ -192,7 +196,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     protected SoundEvent getHurtSound(DamageSource damageSourceIn) {
-        if (this.isActiveItemStackBlocking() && this.isAggressive()) {
+        if (this.isActiveItemStackBlocking()) {
             return SoundEvents.ITEM_SHIELD_BLOCK;
         } else {
             return SoundEvents.ENTITY_VILLAGER_HURT;
@@ -355,7 +359,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     public ItemStack onFoodEaten(World world, ItemStack stack) {
-        if (stack.isFood() && stack.getItem().getFood() != null) {
+        if (stack.isFood()) {
             this.heal(stack.getItem().getFood().getHealing());
         }
         super.onFoodEaten(world, stack);
@@ -427,6 +431,24 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                 }
             }
         }
+    }
+
+    @Override
+    public void setActiveHand(Hand hand) {
+        ItemStack itemstack = this.getHeldItem(hand);
+        if (itemstack.isShield(this)) {
+            ModifiableAttributeInstance modifiableattributeinstance = this.getAttribute(Attributes.MOVEMENT_SPEED);
+            modifiableattributeinstance.removeModifier(USE_ITEM_SPEED_PENALTY);
+            modifiableattributeinstance.applyNonPersistentModifier(USE_ITEM_SPEED_PENALTY);
+        }
+        super.setActiveHand(hand);
+    }
+
+    @Override
+    public void resetActiveHand() {
+        if (this.getActiveItemStack().isShield(this))
+            this.getAttribute(Attributes.MOVEMENT_SPEED).removeModifier(USE_ITEM_SPEED_PENALTY);
+        super.resetActiveHand();
     }
 
     public void disableShield(boolean p_190777_1_) {
@@ -981,7 +1003,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         public void tick() {
             LivingEntity target = guard.getAttackTarget();
             if (target != null) {
-                if (target.getDistance(guard) <= 3.0D) {
+                if (target.getDistance(guard) <= 3.0D && !guard.getHeldItemOffhand().isShield(guard)) {
                     guard.getMoveHelper().strafe(-2.0F, 0.0F);
                     guard.faceEntity(target, 30.0F, 30.0F);
                 }
