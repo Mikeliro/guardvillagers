@@ -71,9 +71,9 @@ public class RangedCrossbowAttackPassiveGoal<T extends CreatureEntity & IRangedA
                 if (guard != entity.getAttackTarget()) {
                     boolean isVillager = guard.getType() == EntityType.VILLAGER || guard.getType() == GuardEntityType.GUARD.get() || guard.getType() == EntityType.IRON_GOLEM;
                     if (isVillager) {
-                        Vector3d vector3d = entity.getLook(1.0F);
+                        Vector3d vector3d = entity.getLookVec();
                         Vector3d vector3d1 = guard.getPositionVec().subtractReverse(entity.getPositionVec()).normalize();
-                        vector3d1 = new Vector3d(vector3d1.x, 0.0D, vector3d1.z);
+                        vector3d1 = new Vector3d(vector3d1.x, vector3d1.y, vector3d1.z);
                         if (vector3d1.dotProduct(vector3d) < 0.0D && entity.canEntityBeSeen(guard))
                             return GuardConfig.FriendlyFire;
                     }

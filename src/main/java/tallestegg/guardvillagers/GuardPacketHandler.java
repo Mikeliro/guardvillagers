@@ -14,6 +14,7 @@ import tallestegg.guardvillagers.entities.GuardContainer;
 import tallestegg.guardvillagers.entities.GuardEntity;
 import tallestegg.guardvillagers.networking.GuardFollowPacket;
 import tallestegg.guardvillagers.networking.GuardOpenInventoryPacket;
+import tallestegg.guardvillagers.networking.GuardSetPatrolPosPacket;
 
 public class GuardPacketHandler {
     private static final String PROTOCOL_VERSION = "1";
@@ -23,9 +24,10 @@ public class GuardPacketHandler {
         int id = 0;
         INSTANCE.registerMessage(id++, GuardOpenInventoryPacket.class, GuardOpenInventoryPacket::encode, GuardOpenInventoryPacket::decode, GuardOpenInventoryPacket::handle);
         INSTANCE.registerMessage(id++, GuardFollowPacket.class, GuardFollowPacket::encode, GuardFollowPacket::decode, GuardFollowPacket::handle);
+        INSTANCE.registerMessage(id++, GuardSetPatrolPosPacket.class, GuardSetPatrolPosPacket::encode, GuardSetPatrolPosPacket::decode, GuardSetPatrolPosPacket::handle);
     }
 
-    @OnlyIn(Dist.CLIENT) //This should be removed when I find a better solution.
+    @OnlyIn(Dist.CLIENT) // This should be removed when I find a better solution.
     public static void openGuardInventory(GuardOpenInventoryPacket packet) {
         PlayerEntity player = Minecraft.getInstance().player;
         if (player != null) {

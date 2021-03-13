@@ -126,11 +126,13 @@ import tallestegg.guardvillagers.entities.ai.goals.RaiseShieldGoal;
 import tallestegg.guardvillagers.entities.ai.goals.RangedBowAttackPassiveGoal;
 import tallestegg.guardvillagers.entities.ai.goals.RangedCrossbowAttackPassiveGoal;
 import tallestegg.guardvillagers.entities.ai.goals.RunToClericGoal;
+import tallestegg.guardvillagers.entities.ai.goals.WalkBackToCheckPointGoal;
 import tallestegg.guardvillagers.networking.GuardOpenInventoryPacket;
 
 public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRangedAttackMob, IAngerable, IInventoryChangedListener {
     private static final UUID MODIFIER_UUID = UUID.fromString("5CD17E52-A79A-43D3-A529-90FDE04B181E");
     private static final AttributeModifier USE_ITEM_SPEED_PENALTY = new AttributeModifier(MODIFIER_UUID, "Use item speed penalty", -0.25D, AttributeModifier.Operation.ADDITION);
+    private static final DataParameter<BlockPos> GUARD_POS = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BLOCK_POS);
     private static final DataParameter<Integer> GUARD_VARIANT = EntityDataManager.createKey(GuardEntity.class, DataSerializers.VARINT);
     private static final DataParameter<Boolean> DATA_CHARGING_STATE = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> EATING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
@@ -145,7 +147,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     public int kickCoolDown;
     public boolean interacting;
     private int field_234197_bv_;
-    private static final RangedInteger field_234196_bu_ = TickRangeConverter.convertRange(20, 39);
+    private static final RangedInteger angerTime = TickRangeConverter.convertRange(20, 39);
     private UUID field_234198_bw_;
     private static final Map<EquipmentSlotType, ResourceLocation> EQUIPMENT_SLOT_ITEMS = Util.make(Maps.newHashMap(), (slotItems) -> {
         slotItems.put(EquipmentSlotType.MAINHAND, GuardLootTables.GUARD_MAIN_HAND);
@@ -187,6 +189,14 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                 this.setAttackTarget(living);
         }
         super.collideWithEntity(entityIn);
+    }
+
+    public void setPatrolPos(BlockPos position) {
+        this.dataManager.set(GUARD_POS, position);
+    }
+
+    public BlockPos getPatrolPos() {
+        return this.getOwner() == null ? null : this.dataManager.get(GUARD_POS);
     }
 
     @Override
@@ -237,6 +247,10 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     public void readAdditional(CompoundNBT compound) {
+        int x = compound.getInt("PatrolPosX");
+        int y = compound.getInt("PatrolPosY");
+        int z = compound.getInt("PatrolPosZ");
+        this.setPatrolPos(new BlockPos(x, y, z));
         super.readAdditional(compound);
         UUID uuid = compound.hasUniqueId("Owner") ? compound.getUniqueId("Owner") : null;
         if (uuid != null) {
@@ -300,6 +314,11 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             }
         }
         compound.put("Inventory", listnbt);
+        if (this.getPatrolPos() != null) {
+            compound.putInt("PatrolPosX", this.getPatrolPos().getX());
+            compound.putInt("PatrolPosY", this.getPatrolPos().getY());
+            compound.putInt("PatrolPosZ", this.getPatrolPos().getZ());
+        }
         this.writeAngerNBT(compound);
     }
 
@@ -472,22 +491,23 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.dataManager.register(OWNER_UNIQUE_ID, Optional.empty());
         this.dataManager.register(EATING, false);
         this.dataManager.register(FOLLOWING, false);
+        this.dataManager.register(GUARD_POS, null);
     }
 
     public boolean isCharging() {
         return this.dataManager.get(DATA_CHARGING_STATE);
     }
 
-    public void setCharging(boolean p_213671_1_) {
-        this.dataManager.set(DATA_CHARGING_STATE, p_213671_1_);
+    public void setCharging(boolean charging) {
+        this.dataManager.set(DATA_CHARGING_STATE, charging);
     }
 
     public boolean isKicking() {
         return this.dataManager.get(KICKING);
     }
 
-    public void setKicking(boolean p_213671_1_) {
-        this.dataManager.set(KICKING, p_213671_1_);
+    public void setKicking(boolean charging) {
+        this.dataManager.set(KICKING, charging);
     }
 
     @Override
@@ -553,6 +573,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.goalSelector.addGoal(6, new RunToClericGoal(this));
         if (GuardConfig.armorerRepairGuardArmor)
             this.goalSelector.addGoal(6, new ArmorerRepairGuardArmorGoal(this));
+        this.goalSelector.addGoal(7, new WalkBackToCheckPointGoal(this, 0.5D));
         this.goalSelector.addGoal(8, new LookAtGoal(this, AbstractVillagerEntity.class, 8.0F));
         this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.5D));
         this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));
@@ -573,6 +594,11 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.targetSelector.addGoal(3, new NearestAttackableTargetGoal<>(this, PlayerEntity.class, 10, true, false, this::func_233680_b_));
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, ZombieEntity.class, true));
         this.targetSelector.addGoal(4, new ResetAngerGoal<>(this, false));
+    }
+
+    @Override
+    public boolean canBeLeashedTo(PlayerEntity player) {
+        return false;
     }
 
     @Override
@@ -842,7 +868,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     public void func_230258_H__() {
-        this.setAngerTime(field_234196_bu_.getRandomWithinRange(rand));
+        this.setAngerTime(angerTime.getRandomWithinRange(rand));
     }
 
     public void openGui(ServerPlayerEntity player) {
@@ -996,7 +1022,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
         @Override
         public boolean shouldContinueExecuting() {
-            return super.shouldContinueExecuting() && this.guard.getAttackTarget() != null;
+            return super.shouldContinueExecuting() && this.guard.getAttackTarget() != null && !(this.guard.getHeldItemMainhand().getItem() instanceof CrossbowItem);
         }
 
         @Override
