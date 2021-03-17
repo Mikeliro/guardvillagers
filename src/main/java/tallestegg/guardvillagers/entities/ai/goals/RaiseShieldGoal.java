@@ -5,6 +5,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.monster.CreeperEntity;
 import net.minecraft.entity.monster.RavagerEntity;
+import net.minecraft.item.BowItem;
 import net.minecraft.item.CrossbowItem;
 import net.minecraft.util.Hand;
 import net.minecraft.util.ResourceLocation;
@@ -22,7 +23,7 @@ public class RaiseShieldGoal extends Goal {
 
     @Override
     public boolean shouldExecute() {
-        return !CrossbowItem.isCharged(guard.getHeldItemMainhand()) && guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard) && raiseShield() && guard.shieldCoolDown == 0
+        return !guard.isHandActive() && !CrossbowItem.isCharged(guard.getHeldItemMainhand()) && guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard) && raiseShield() && guard.shieldCoolDown == 0
                 && !guard.getHeldItemOffhand().getItem().equals(ForgeRegistries.ITEMS.getValue(new ResourceLocation("bigbrain:buckler")));
     }
 
@@ -46,7 +47,8 @@ public class RaiseShieldGoal extends Goal {
     protected boolean raiseShield() {
         LivingEntity target = guard.getAttackTarget();
         if (target != null && guard.shieldCoolDown == 0) {
-            if (guard.getDistance(target) <= 4.0D || target instanceof CreeperEntity || target instanceof IRangedAttackMob && target.getDistance(guard) >= 5.0D && !(guard.getHeldItemMainhand().getItem() instanceof CrossbowItem) || target instanceof RavagerEntity || GuardConfig.GuardAlwaysShield) {
+            boolean ranged = guard.getHeldItemMainhand().getItem() instanceof CrossbowItem || guard.getHeldItemMainhand().getItem() instanceof BowItem;
+            if (guard.getDistance(target) <= 4.0D || target instanceof CreeperEntity || target instanceof IRangedAttackMob && target.getDistance(guard) >= 5.0D && !ranged || target instanceof RavagerEntity || GuardConfig.GuardAlwaysShield) {
                 return true;
             } else {
                 return false;

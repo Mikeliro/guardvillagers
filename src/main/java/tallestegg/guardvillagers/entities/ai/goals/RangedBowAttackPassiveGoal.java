@@ -123,7 +123,7 @@ public class RangedBowAttackPassiveGoal<T extends GuardEntity & IRangedAttackMob
             this.entity.faceEntity(livingentity, 30.0F, 30.0F);
             this.entity.getLookController().setLookPositionWithEntity(livingentity, 30.0F, 30.0F);
 
-            if (this.entity.isHandActive()) {
+            if (this.entity.isHandActive() && !this.entity.isActiveItemStackBlocking()) {
                 if (!flag && this.seeTime < -60) {
                     this.entity.resetActiveHand();
                 } else if (flag) {
@@ -134,7 +134,7 @@ public class RangedBowAttackPassiveGoal<T extends GuardEntity & IRangedAttackMob
                         this.attackTime = this.attackCooldown;
                     }
                 }
-            } else if (--this.attackTime <= 0 && this.seeTime >= -60) {
+            } else if (--this.attackTime <= 0 && this.seeTime >= -60 && !this.entity.isActiveItemStackBlocking()) {
                 this.entity.setActiveHand(GuardItems.getHandWith(entity, item -> item instanceof BowItem));
             }
 
