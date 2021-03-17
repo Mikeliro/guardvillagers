@@ -11,9 +11,8 @@ import net.minecraft.inventory.container.ContainerType;
 import net.minecraft.inventory.container.PlayerContainer;
 import net.minecraft.inventory.container.Slot;
 import net.minecraft.item.ItemStack;
-import net.minecraft.potion.Effects;
 import net.minecraft.util.ResourceLocation;
-import tallestegg.guardvillagers.configuration.GuardConfig;
+import tallestegg.guardvillagers.GuardVillagers;
 
 public class GuardContainer extends Container {
     private final IInventory guardInventory;
@@ -27,7 +26,7 @@ public class GuardContainer extends Container {
         this.addSlot(new Slot(guardInventory, 0, 8, 9) {
             @Override
             public boolean isItemValid(ItemStack stack) {
-                return stack.canEquip(EquipmentSlotType.HEAD, guard);
+                return stack.canEquip(EquipmentSlotType.HEAD, guard) && GuardVillagers.hotvChecker(playerInventory.player);
             }
 
             @Override
@@ -42,6 +41,11 @@ public class GuardContainer extends Container {
             }
 
             @Override
+            public boolean canTakeStack(PlayerEntity playerIn) {
+                return GuardVillagers.hotvChecker(playerInventory.player);
+            }
+
+            @Override
             public Pair<ResourceLocation, ResourceLocation> getBackground() {
                 return Pair.of(PlayerContainer.LOCATION_BLOCKS_TEXTURE, PlayerContainer.EMPTY_ARMOR_SLOT_HELMET);
             }
@@ -49,7 +53,7 @@ public class GuardContainer extends Container {
         this.addSlot(new Slot(guardInventory, 1, 8, 26) {
             @Override
             public boolean isItemValid(ItemStack stack) {
-                return stack.canEquip(EquipmentSlotType.CHEST, guard);
+                return stack.canEquip(EquipmentSlotType.CHEST, guard) && GuardVillagers.hotvChecker(playerInventory.player);
             }
 
             @Override
@@ -64,6 +68,11 @@ public class GuardContainer extends Container {
             }
 
             @Override
+            public boolean canTakeStack(PlayerEntity playerIn) {
+                return GuardVillagers.hotvChecker(playerInventory.player);
+            }
+
+            @Override
             public Pair<ResourceLocation, ResourceLocation> getBackground() {
                 return Pair.of(PlayerContainer.LOCATION_BLOCKS_TEXTURE, PlayerContainer.EMPTY_ARMOR_SLOT_CHESTPLATE);
             }
@@ -71,7 +80,7 @@ public class GuardContainer extends Container {
         this.addSlot(new Slot(guardInventory, 2, 8, 44) {
             @Override
             public boolean isItemValid(ItemStack stack) {
-                return stack.canEquip(EquipmentSlotType.LEGS, guard);
+                return stack.canEquip(EquipmentSlotType.LEGS, guard) && GuardVillagers.hotvChecker(playerInventory.player);
             }
 
             @Override
@@ -86,6 +95,11 @@ public class GuardContainer extends Container {
             }
 
             @Override
+            public boolean canTakeStack(PlayerEntity playerIn) {
+                return GuardVillagers.hotvChecker(playerInventory.player);
+            }
+
+            @Override
             public Pair<ResourceLocation, ResourceLocation> getBackground() {
                 return Pair.of(PlayerContainer.LOCATION_BLOCKS_TEXTURE, PlayerContainer.EMPTY_ARMOR_SLOT_LEGGINGS);
             }
@@ -93,7 +107,7 @@ public class GuardContainer extends Container {
         this.addSlot(new Slot(guardInventory, 3, 8, 62) {
             @Override
             public boolean isItemValid(ItemStack stack) {
-                return stack.canEquip(EquipmentSlotType.FEET, guard);
+                return stack.canEquip(EquipmentSlotType.FEET, guard) && GuardVillagers.hotvChecker(playerInventory.player);
             }
 
             @Override
@@ -108,15 +122,30 @@ public class GuardContainer extends Container {
             }
 
             @Override
+            public boolean canTakeStack(PlayerEntity playerIn) {
+                return GuardVillagers.hotvChecker(playerInventory.player);
+            }
+
+            @Override
             public Pair<ResourceLocation, ResourceLocation> getBackground() {
                 return Pair.of(PlayerContainer.LOCATION_BLOCKS_TEXTURE, PlayerContainer.EMPTY_ARMOR_SLOT_BOOTS);
             }
         });
         this.addSlot(new Slot(guardInventory, 4, 77, 62) {
             @Override
+            public boolean isItemValid(ItemStack stack) {
+                return GuardVillagers.hotvChecker(playerInventory.player);
+            }
+
+            @Override
             public void putStack(ItemStack stack) {
                 super.putStack(stack);
                 guard.setItemStackToSlot(EquipmentSlotType.OFFHAND, stack);
+            }
+
+            @Override
+            public boolean canTakeStack(PlayerEntity playerIn) {
+                return GuardVillagers.hotvChecker(playerInventory.player);
             }
 
             @Override
@@ -126,6 +155,16 @@ public class GuardContainer extends Container {
         });
 
         this.addSlot(new Slot(guardInventory, 5, 77, 44) {
+            @Override
+            public boolean isItemValid(ItemStack stack) {
+                return GuardVillagers.hotvChecker(playerInventory.player);
+            }
+
+            @Override
+            public boolean canTakeStack(PlayerEntity playerIn) {
+                return GuardVillagers.hotvChecker(playerIn);
+            }
+
             @Override
             public void putStack(ItemStack stack) {
                 super.putStack(stack);
@@ -145,8 +184,7 @@ public class GuardContainer extends Container {
 
     @Override
     public boolean canInteractWith(PlayerEntity playerIn) {
-        boolean hotv = playerIn.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.needHOTVToOpenGuardInventory || !GuardConfig.needHOTVToOpenGuardInventory;
-        return this.guardInventory.isUsableByPlayer(playerIn) && this.guard.isAlive() && this.guard.getDistance(playerIn) < 8.0F && hotv;
+        return this.guardInventory.isUsableByPlayer(playerIn) && this.guard.isAlive() && this.guard.getDistance(playerIn) < 8.0F;
     }
 
     @Override

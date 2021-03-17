@@ -5,6 +5,7 @@ import java.util.List;
 import net.minecraft.entity.ai.goal.Goal;
 import net.minecraft.entity.merchant.villager.VillagerEntity;
 import net.minecraft.entity.merchant.villager.VillagerProfession;
+import net.minecraft.potion.Effects;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
 
@@ -22,7 +23,7 @@ public class RunToClericGoal extends Goal {
         if (!list.isEmpty()) {
             for (VillagerEntity mob : list) {
                 if (mob != null) {
-                    if (mob.getVillagerData().getProfession() == VillagerProfession.CLERIC && guard.getHealth() < guard.getMaxHealth() && guard.getAttackTarget() == null) {
+                    if (mob.getVillagerData().getProfession() == VillagerProfession.CLERIC && guard.getHealth() < guard.getMaxHealth() && guard.getAttackTarget() == null && !guard.isPotionActive(Effects.REGENERATION)) {
                         this.cleric = mob;
                         return GuardConfig.ClericHealing;
                     }

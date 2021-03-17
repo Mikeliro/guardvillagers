@@ -2,9 +2,10 @@ package tallestegg.guardvillagers;
 
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.ai.attributes.GlobalEntityTypeAttributes;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.potion.Effects;
 import net.minecraft.world.raid.Raid;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -14,7 +15,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
-import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import tallestegg.guardvillagers.client.renderer.GuardRenderer;
 import tallestegg.guardvillagers.configuration.GuardConfig;
@@ -48,23 +48,21 @@ public class GuardVillagers {
         RenderingRegistry.registerEntityRenderingHandler(GuardEntityType.GUARD.get(), GuardRenderer::new);
     }
 
+    @SuppressWarnings("deprecation")
     private void dispatch(final ParallelDispatchEvent event) {
         event.enqueueWork(() -> {
-            GlobalEntityTypeAttributes.put(GuardEntityType.GUARD.get(), GuardEntity.func_234200_m_().create());
+            GlobalEntityTypeAttributes.put(GuardEntityType.GUARD.get(), GuardEntity.createAttributes().create());
             DeferredSpawnEggItem.initUnaddedEggs();
         });
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
-
     }
 
     private void processIMC(final InterModProcessEvent event) {
-
     }
 
-    @SubscribeEvent
-    public void onServerStarting(FMLServerStartingEvent event) {
-
+    public static boolean hotvChecker(PlayerEntity player) {
+        return player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.giveGuardStuffHOTV && !GuardConfig.setGuardPatrolHotv || !GuardConfig.giveGuardStuffHOTV;
     }
 }

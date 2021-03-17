@@ -40,9 +40,10 @@ public class GuardConfig {
     public static double GuardSpeed;
     public static double GuardVillagerHelpRange;
     public static float amountOfHealthRegenerated;
-    public static boolean needHOTVToOpenGuardInventory;
     public static boolean guardArrowsHurtVillagers;
     public static boolean armorerRepairGuardArmor;
+    public static boolean giveGuardStuffHOTV;
+    public static boolean setGuardPatrolHotv;
     public static List<String> MobBlackList;
 
     public static void bakeConfig() {
@@ -65,9 +66,11 @@ public class GuardConfig {
         GuardHealth = COMMON.GuardHealth.get();
         GuardSpeed = COMMON.GuardSpeed.get();
         amountOfHealthRegenerated = COMMON.amountOfHealthRegenerated.get().floatValue();
-        needHOTVToOpenGuardInventory = COMMON.needHOTVToOpenGuardInventory.get();
         guardArrowsHurtVillagers = COMMON.guardArrowsHurtVillagers.get();
         armorerRepairGuardArmor = COMMON.armorersRepairGuardArmor.get();
+        giveGuardStuffHOTV = COMMON.giveGuardStuffHOTV.get();
+        setGuardPatrolHotv = COMMON.setGuardPatrolHotv.get();
+
     }
 
     @SubscribeEvent
@@ -97,10 +100,11 @@ public class GuardConfig {
         public final ForgeConfigSpec.DoubleValue GuardSpeed;
         public final ForgeConfigSpec.DoubleValue GuardFollowRange;
         public final ForgeConfigSpec.DoubleValue amountOfHealthRegenerated;
-        public final ForgeConfigSpec.BooleanValue needHOTVToOpenGuardInventory;
         public final ForgeConfigSpec.BooleanValue guardArrowsHurtVillagers;
         public final ForgeConfigSpec.BooleanValue armorersRepairGuardArmor;
         public final ForgeConfigSpec.ConfigValue<List<String>> MobBlackList;
+        public final ForgeConfigSpec.BooleanValue giveGuardStuffHOTV;
+        public final ForgeConfigSpec.BooleanValue setGuardPatrolHotv;
 
         public CommonConfig(ForgeConfigSpec.Builder builder) {
             RaidAnimals = builder.comment("Illagers In Raids Attack Animals?").translation(GuardVillagers.MODID + ".config.RaidAnimals").define("Illagers in raids attack animals?", false);
@@ -126,9 +130,10 @@ public class GuardConfig {
             GuardSpeed = builder.translation(GuardVillagers.MODID + ".config.speed").defineInRange("Guard speed", 0.5D, -500.0D, 500.0D);
             GuardFollowRange = builder.translation(GuardVillagers.MODID + ".config.followingRange").defineInRange("Guard follow range", 25.0D, -500.0D, 500.0D);
             amountOfHealthRegenerated = builder.translation(GuardVillagers.MODID + ".config.amountofHealthRegenerated").comment("How much health a guard regenerates.").defineInRange("Guard health regeneration amount", 1.0D, -500.0D, 500.0D);
-            needHOTVToOpenGuardInventory = builder.translation(GuardVillagers.MODID + ".config.needHOTVToOpenGuardInventory").define("Allow players to only open the guard's inventory if you have hero of the village?", true);
             guardArrowsHurtVillagers = builder.translation(GuardVillagers.MODID + ".config.guardArrows").define("Allow guard arrows to damage villagers, iron golems, or other guards?", true);
-            armorersRepairGuardArmor = builder.translation(GuardVillagers.MODID + ".config.armorvillager").define("Allow armorers and weaponsmiths repair guard items when down a certain percent?", true);
+            armorersRepairGuardArmor = builder.translation(GuardVillagers.MODID + ".config.armorvillager").define("Allow armorers and weaponsmiths repair guard items when down below half durability?", true);
+            giveGuardStuffHOTV = builder.translation(GuardVillagers.MODID + ".config.hotvArmor").define("Allow players to give guards stuff only if they have the hero of the village effect?", true);
+            setGuardPatrolHotv = builder.translation(GuardVillagers.MODID + ".config.hotvPatrolPoint").define("Allow players to set guard patrol points only if they have hero of the village", true);
         }
     }
 }

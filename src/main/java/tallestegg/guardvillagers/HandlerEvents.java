@@ -24,6 +24,7 @@ import net.minecraft.entity.passive.PolarBearEntity;
 import net.minecraftforge.event.entity.EntityJoinWorldEvent;
 import net.minecraftforge.event.entity.living.LivingHurtEvent;
 import net.minecraftforge.event.entity.living.LivingSetAttackTargetEvent;
+import net.minecraftforge.event.entity.living.PotionEvent.PotionRemoveEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import tallestegg.guardvillagers.configuration.GuardConfig;
@@ -71,7 +72,7 @@ public class HandlerEvents {
             }
         }
     }
-
+    
     @SubscribeEvent
     public static void onLivingSpawned(EntityJoinWorldEvent event) {
         if (GuardConfig.AttackAllMobs) {

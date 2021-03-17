@@ -26,6 +26,7 @@ public class GuardRenderer extends BipedRenderer<GuardEntity, GuardModel> {
         this.addLayer(new BipedArmorLayer<GuardEntity, GuardModel, GuardArmorModel>(this, new GuardArmorModel(0.5F), new GuardArmorModel(1.0F)));
     }
 
+    @Override
     public void render(GuardEntity entityIn, float entityYaw, float partialTicks, MatrixStack matrixStackIn, IRenderTypeBuffer bufferIn, int packedLightIn) {
         this.setModelVisibilities(entityIn);
         super.render(entityIn, entityYaw, partialTicks, matrixStackIn, bufferIn, packedLightIn);
@@ -88,7 +89,7 @@ public class GuardRenderer extends BipedRenderer<GuardEntity, GuardModel> {
         }
         return bipedmodel$armpose;
     }
-    
+
     @Override
     protected void preRenderCallback(GuardEntity entitylivingbaseIn, MatrixStack matrixStackIn, float partialTickTime) {
         matrixStackIn.scale(0.9375F, 0.9375F, 0.9375F);

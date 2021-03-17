@@ -39,10 +39,10 @@ public class HealGuardAndPlayerGoal extends Goal {
     private final float maxAttackDistance;
     protected final EntityPredicate predicate = (new EntityPredicate()).setDistance(64.0D);
 
-    public HealGuardAndPlayerGoal(MobEntity healer, double movespeed, int p_i1650_4_, int maxAttackTime, float maxAttackDistanceIn) {
+    public HealGuardAndPlayerGoal(MobEntity healer, double movespeed, int attackIntervalMin, int maxAttackTime, float maxAttackDistanceIn) {
         this.healer = healer;
         this.entityMoveSpeed = movespeed;
-        this.attackIntervalMin = p_i1650_4_;
+        this.attackIntervalMin = attackIntervalMin;
         this.maxRangedAttackTime = maxAttackTime;
         this.attackRadius = maxAttackDistanceIn;
         this.maxAttackDistance = maxAttackDistanceIn * maxAttackDistanceIn;
@@ -106,8 +106,8 @@ public class HealGuardAndPlayerGoal extends Goal {
                 return;
             }
             float f =  this.attackRadius;
-            float lvt_5_1_ = MathHelper.clamp(f, 0.1F, 0.5F);
-            this.throwPotion(mob, lvt_5_1_);
+            float distanceFactor = MathHelper.clamp(f, 0.5F, 0.5F);
+            this.throwPotion(mob, distanceFactor);
             this.rangedAttackTime = MathHelper.floor(f * (float) (this.maxRangedAttackTime - this.attackIntervalMin) + (float) this.attackIntervalMin);
         } else if (this.rangedAttackTime < 0) {
             float f2 = MathHelper.sqrt(d0) / this.attackRadius;

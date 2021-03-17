@@ -116,12 +116,12 @@ public class RangedBowAttackPassiveGoal<T extends GuardEntity & IRangedAttackMob
                 } else if (d0 < (double) (this.maxAttackDistance * 0.25F)) {
                     this.strafingBackwards = true;
                 }
-
-                this.entity.getMoveHelper().strafe(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
+                if (entity.getPatrolPos() == null)
+                    this.entity.getMoveHelper().strafe(this.strafingBackwards ? -0.5F : 0.5F, this.strafingClockwise ? 0.5F : -0.5F);
                 this.entity.faceEntity(livingentity, 30.0F, 30.0F);
-            } else {
-                this.entity.getLookController().setLookPositionWithEntity(livingentity, 30.0F, 30.0F);
             }
+            this.entity.faceEntity(livingentity, 30.0F, 30.0F);
+            this.entity.getLookController().setLookPositionWithEntity(livingentity, 30.0F, 30.0F);
 
             if (this.entity.isHandActive()) {
                 if (!flag && this.seeTime < -60) {

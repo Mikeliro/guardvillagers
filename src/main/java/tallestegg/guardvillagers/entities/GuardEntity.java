@@ -15,7 +15,6 @@ import com.google.common.collect.Maps;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.CreatureEntity;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityPredicate;
 import net.minecraft.entity.EntitySize;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.IAngerable;
@@ -133,6 +132,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     private static final UUID MODIFIER_UUID = UUID.fromString("5CD17E52-A79A-43D3-A529-90FDE04B181E");
     private static final AttributeModifier USE_ITEM_SPEED_PENALTY = new AttributeModifier(MODIFIER_UUID, "Use item speed penalty", -0.25D, AttributeModifier.Operation.ADDITION);
     private static final DataParameter<BlockPos> GUARD_POS = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BLOCK_POS);
+    private static final DataParameter<Boolean> PATROLLING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Integer> GUARD_VARIANT = EntityDataManager.createKey(GuardEntity.class, DataSerializers.VARINT);
     private static final DataParameter<Boolean> DATA_CHARGING_STATE = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> EATING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
@@ -196,7 +196,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     }
 
     public BlockPos getPatrolPos() {
-        return this.getOwner() == null ? null : this.dataManager.get(GUARD_POS);
+        return this.dataManager.get(GUARD_POS);
     }
 
     @Override
@@ -265,6 +265,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.setFollowing(compound.getBoolean("Following"));
         this.interacting = compound.getBoolean("Interacting");
         this.setEating(compound.getBoolean("Eating"));
+        this.setPatrolling(compound.getBoolean("Patrolling"));
         this.shieldCoolDown = compound.getInt("KickCooldown");
         this.kickCoolDown = compound.getInt("ShieldCooldown");
         ListNBT listnbt = compound.getList("Inventory", 10);
@@ -300,6 +301,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         compound.putBoolean("Following", this.isFollowing());
         compound.putBoolean("Interacting", this.interacting);
         compound.putBoolean("Eating", this.isEating());
+        compound.putBoolean("Patrolling", this.isPatrolling());
         if (this.getOwnerId() != null) {
             compound.putUniqueId("Owner", this.getOwnerId());
         }
@@ -465,7 +467,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     public void resetActiveHand() {
-        if (this.getActiveItemStack().isShield(this))
+        if (this.getAttribute(Attributes.MOVEMENT_SPEED).hasModifier(USE_ITEM_SPEED_PENALTY))
             this.getAttribute(Attributes.MOVEMENT_SPEED).removeModifier(USE_ITEM_SPEED_PENALTY);
         super.resetActiveHand();
     }
@@ -491,7 +493,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.dataManager.register(OWNER_UNIQUE_ID, Optional.empty());
         this.dataManager.register(EATING, false);
         this.dataManager.register(FOLLOWING, false);
-        this.dataManager.register(GUARD_POS, null);
+        this.dataManager.register(GUARD_POS, BlockPos.ZERO);
+        this.dataManager.register(PATROLLING, false);
     }
 
     public boolean isCharging() {
@@ -506,8 +509,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         return this.dataManager.get(KICKING);
     }
 
-    public void setKicking(boolean charging) {
-        this.dataManager.set(KICKING, charging);
+    public void setKicking(boolean kicking) {
+        this.dataManager.set(KICKING, kicking);
     }
 
     @Override
@@ -573,11 +576,11 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             this.goalSelector.addGoal(6, new RunToClericGoal(this));
         if (GuardConfig.armorerRepairGuardArmor)
             this.goalSelector.addGoal(6, new ArmorerRepairGuardArmorGoal(this));
-        this.goalSelector.addGoal(7, new WalkBackToCheckPointGoal(this, 0.5D));
+        this.goalSelector.addGoal(4, new WalkBackToCheckPointGoal(this, 0.5D));
         this.goalSelector.addGoal(8, new LookAtGoal(this, AbstractVillagerEntity.class, 8.0F));
         this.goalSelector.addGoal(8, new RandomWalkingGoal(this, 0.5D));
         this.goalSelector.addGoal(8, new LookAtGoal(this, PlayerEntity.class, 8.0F));
-        this.targetSelector.addGoal(0, new GuardEntity.DefendVillageGuardGoal(this));
+        this.targetSelector.addGoal(5, new GuardEntity.DefendVillageGuardGoal(this));
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, RavagerEntity.class, true));
         this.targetSelector.addGoal(2, (new HurtByTargetGoal(this, GuardEntity.class, IronGolemEntity.class)).setCallsForHelp());
         this.targetSelector.addGoal(2, new NearestAttackableTargetGoal<>(this, WitchEntity.class, true));
@@ -661,7 +664,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     public int getKickTicks() {
         return this.kickTicks;
     }
-
+    
     @Override
     public void travel(Vector3d travelVector) {
         if (!this.interacting)
@@ -739,12 +742,14 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     protected ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
-        boolean hotv = player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.needHOTVToOpenGuardInventory || !GuardConfig.needHOTVToOpenGuardInventory && !player.isCrouching();
-        if (!player.isCrouching() && this.isServerWorld() && hotv && this.getAttackTarget() != player && this.onGround) {
+    	boolean configValues = !GuardConfig.giveGuardStuffHOTV || !GuardConfig.setGuardPatrolHotv || player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.giveGuardStuffHOTV || player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.setGuardPatrolHotv; 
+    	boolean inventoryRequirements =  !player.isCrouching() && this.isServerWorld() && this.getAttackTarget() != player && !this.velocityChanged ;
+        if (configValues && inventoryRequirements || inventoryRequirements) {
             this.openGui((ServerPlayerEntity) player);
             return ActionResultType.func_233537_a_(this.world.isRemote);
         }
-        return hotv ? ActionResultType.SUCCESS : ActionResultType.PASS;
+        boolean isAttackingPlayer = this.getAttackTarget() != player && this.isServerWorld() || player.isCrouching() && !this.velocityChanged ;
+        return !isAttackingPlayer ? ActionResultType.SUCCESS : super.func_230254_b_(player, hand);
     }
 
     @Override
@@ -883,7 +888,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         MinecraftForge.EVENT_BUS.post(new PlayerContainerEvent.Open(player, player.openContainer));
     }
 
-    public static AttributeModifierMap.MutableAttribute func_234200_m_() {
+    public static AttributeModifierMap.MutableAttribute createAttributes() {
         return MobEntity.func_233666_p_().createMutableAttribute(Attributes.MAX_HEALTH, GuardConfig.GuardHealth).createMutableAttribute(Attributes.MOVEMENT_SPEED, GuardConfig.GuardSpeed).createMutableAttribute(Attributes.ATTACK_DAMAGE, 1.0D).createMutableAttribute(Attributes.FOLLOW_RANGE,
                 GuardConfig.GuardFollowRange);
     }
@@ -905,6 +910,14 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.dataManager.set(EATING, eating);
     }
 
+    public boolean isPatrolling() {
+        return this.dataManager.get(PATROLLING);
+    }
+
+    public void setPatrolling(boolean patrolling) {
+        this.dataManager.set(PATROLLING, patrolling);
+    }
+
     public static class GuardData implements ILivingEntityData {
         public final int variantData;
 
@@ -914,24 +927,22 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     }
 
     public static class DefendVillageGuardGoal extends TargetGoal {
-        protected final GuardEntity guard;
-        protected LivingEntity villageAggressorTarget;
-        protected final EntityPredicate field_223190_c = (new EntityPredicate()).setDistance(64.0D);
+        private final GuardEntity guard;
+        private LivingEntity villageAggressorTarget;
 
         public DefendVillageGuardGoal(GuardEntity guardIn) {
             super(guardIn, false, true);
             this.guard = guardIn;
-            this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET));
+            this.setMutexFlags(EnumSet.of(Goal.Flag.TARGET, Goal.Flag.MOVE));
         }
 
+        @Override
         public boolean shouldExecute() {
             AxisAlignedBB axisalignedbb = this.guard.getBoundingBox().grow(10.0D, 8.0D, 10.0D);
-            List<LivingEntity> list = this.guard.world.getTargettableEntitiesWithinAABB(VillagerEntity.class, this.field_223190_c, this.guard, axisalignedbb);
-            List<PlayerEntity> list1 = this.guard.world.getTargettablePlayersWithinAABB(this.field_223190_c, this.guard, axisalignedbb);
-
+            List<LivingEntity> list = guard.world.getEntitiesWithinAABB(VillagerEntity.class, axisalignedbb);
+            List<PlayerEntity> list1 = guard.world.getEntitiesWithinAABB(PlayerEntity.class, axisalignedbb);
             for (LivingEntity livingentity : list) {
                 VillagerEntity villagerentity = (VillagerEntity) livingentity;
-
                 for (PlayerEntity playerentity : list1) {
                     int i = villagerentity.getPlayerReputation(playerentity);
                     if (i <= -100) {
@@ -939,14 +950,10 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                     }
                 }
             }
-
-            if (this.villageAggressorTarget == null) {
-                return false;
-            } else {
-                return !(this.villageAggressorTarget instanceof PlayerEntity) || !this.villageAggressorTarget.isSpectator() && !((PlayerEntity) this.villageAggressorTarget).isCreative();
-            }
+            return villageAggressorTarget != null && !this.villageAggressorTarget.isSpectator() && !((PlayerEntity) this.villageAggressorTarget).isCreative();
         }
 
+        @Override
         public void startExecuting() {
             this.guard.setAttackTarget(this.villageAggressorTarget);
             super.startExecuting();
