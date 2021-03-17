@@ -2,6 +2,7 @@ package tallestegg.guardvillagers;
 
 import java.util.List;
 
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityType;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.MobEntity;
@@ -54,7 +55,7 @@ public class HandlerEvents {
     @SubscribeEvent
     public static void onEntityHurt(LivingHurtEvent event) {
         LivingEntity entity = (LivingEntity) event.getEntity();
-        LivingEntity trueSource = (LivingEntity) event.getSource().getTrueSource();
+        Entity trueSource = (Entity) event.getSource().getTrueSource();
         if (entity == null || trueSource == null)
             return;
         boolean isVillager = entity.getType() == EntityType.VILLAGER || entity.getType() == GuardEntityType.GUARD.get();
