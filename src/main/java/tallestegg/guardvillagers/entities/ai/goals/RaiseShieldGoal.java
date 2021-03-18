@@ -23,7 +23,7 @@ public class RaiseShieldGoal extends Goal {
 
     @Override
     public boolean shouldExecute() {
-        return !guard.isHandActive() && !CrossbowItem.isCharged(guard.getHeldItemMainhand()) && guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard) && raiseShield() && guard.shieldCoolDown == 0
+        return !CrossbowItem.isCharged(guard.getHeldItemMainhand()) && guard.getHeldItemOffhand().getItem().isShield(guard.getHeldItemOffhand(), guard) && raiseShield() && guard.shieldCoolDown == 0
                 && !guard.getHeldItemOffhand().getItem().equals(ForgeRegistries.ITEMS.getValue(new ResourceLocation("bigbrain:buckler")));
     }
 

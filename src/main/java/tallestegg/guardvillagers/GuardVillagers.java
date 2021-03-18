@@ -6,6 +6,9 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.potion.Effects;
 import net.minecraft.world.raid.Raid;
 import net.minecraftforge.common.MinecraftForge;
+import net.minecraftforge.event.RegistryEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.client.registry.RenderingRegistry;
 import net.minecraftforge.fml.common.Mod;
@@ -14,7 +17,6 @@ import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
-import net.minecraftforge.fml.event.lifecycle.ParallelDispatchEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import tallestegg.guardvillagers.client.renderer.GuardRenderer;
 import tallestegg.guardvillagers.configuration.GuardConfig;
@@ -31,7 +33,6 @@ public class GuardVillagers {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, GuardConfig.COMMON_SPEC);
-        FMLJavaModLoadingContext.get().getModEventBus().addListener(this::dispatch);
         MinecraftForge.EVENT_BUS.register(this);
         GuardEntityType.ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus());
         GuardItems.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
@@ -39,21 +40,18 @@ public class GuardVillagers {
         // GuardSpawner.inject();
     }
 
+    @SuppressWarnings("deprecation")
     private void setup(final FMLCommonSetupEvent event) {
-        if (GuardConfig.IllusionerRaids)
+        if (GuardConfig.IllusionerRaids) {
             Raid.WaveMember.create("thebluemengroup", EntityType.ILLUSIONER, new int[] { 0, 0, 0, 0, 0, 1, 1, 2 });
+        }
+        event.enqueueWork(() -> {
+            GlobalEntityTypeAttributes.put(GuardEntityType.GUARD.get(), GuardEntity.createAttributes().create());
+        });
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
         RenderingRegistry.registerEntityRenderingHandler(GuardEntityType.GUARD.get(), GuardRenderer::new);
-    }
-
-    @SuppressWarnings("deprecation")
-    private void dispatch(final ParallelDispatchEvent event) {
-        event.enqueueWork(() -> {
-            GlobalEntityTypeAttributes.put(GuardEntityType.GUARD.get(), GuardEntity.createAttributes().create());
-            DeferredSpawnEggItem.initUnaddedEggs();
-        });
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
@@ -63,6 +61,14 @@ public class GuardVillagers {
     }
 
     public static boolean hotvChecker(PlayerEntity player) {
-        return player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.giveGuardStuffHOTV && !GuardConfig.setGuardPatrolHotv || !GuardConfig.giveGuardStuffHOTV;
+        return player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.giveGuardStuffHOTV || !GuardConfig.giveGuardStuffHOTV;
+    }
+
+    @Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
+    public static class RegistryEvents {
+        @SubscribeEvent(priority = EventPriority.LOWEST)
+        public static void onEntitiesRegistered(RegistryEvent.Register<EntityType<?>> event) {
+            DeferredSpawnEggItem.initUnaddedEggs();
+        }
     }
 }
