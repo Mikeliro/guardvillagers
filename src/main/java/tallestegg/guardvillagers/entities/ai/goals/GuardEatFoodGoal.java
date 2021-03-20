@@ -12,7 +12,6 @@ import net.minecraft.util.Hand;
 import tallestegg.guardvillagers.entities.GuardEntity;
 
 public class GuardEatFoodGoal extends Goal {
-
     public final GuardEntity guard;
 
     public GuardEatFoodGoal(GuardEntity guard) {
@@ -21,7 +20,7 @@ public class GuardEatFoodGoal extends Goal {
 
     @Override
     public boolean shouldExecute() {
-        return guard.getHealth() < guard.getMaxHealth() && GuardEatFoodGoal.isConsumable(guard.getHeldItemOffhand()) && guard.isEating() || guard.getHealth() < guard.getMaxHealth() && GuardEatFoodGoal.isConsumable(guard.getHeldItemOffhand()) && guard.getAttackTarget() == null && !guard.isAggressive();
+        return !guard.isRunningToEat() && guard.getHealth() < guard.getMaxHealth() && GuardEatFoodGoal.isConsumable(guard.getHeldItemOffhand()) && guard.isEating() || guard.getHealth() < guard.getMaxHealth() && GuardEatFoodGoal.isConsumable(guard.getHeldItemOffhand()) && guard.getAttackTarget() == null && !guard.isAggressive();
     }
 
     public static boolean isConsumable(ItemStack stack) {

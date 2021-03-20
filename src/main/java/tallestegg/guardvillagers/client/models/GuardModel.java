@@ -75,7 +75,7 @@ public class GuardModel extends BipedModel<GuardEntity> {
     @Override
     public void setRotationAngles(GuardEntity entityIn, float limbSwing, float limbSwingAmount, float ageInTicks, float netbipedHeadYaw, float bipedHeadPitch) {
         super.setRotationAngles(entityIn, limbSwing, limbSwingAmount, ageInTicks, netbipedHeadYaw, bipedHeadPitch);
-        ItemStack itemstack = entityIn.getHeldItem(entityIn.getActiveHand());
+        ItemStack itemstack = entityIn.getHeldItem(Hand.MAIN_HAND);
         boolean isHoldingShootable = itemstack.getItem() instanceof ShootableItem;
         this.quiver.showModel = isHoldingShootable;
         boolean hasChestplate = entityIn.getItemStackFromSlot(EquipmentSlotType.CHEST).getItem() instanceof ArmorItem;
@@ -97,7 +97,7 @@ public class GuardModel extends BipedModel<GuardEntity> {
     public void eatingAnimationRightHand(Hand hand, GuardEntity entity, float ageInTicks) {
         ItemStack itemstack = entity.getHeldItem(hand);
         boolean drinkingoreating = itemstack.getUseAction() == UseAction.EAT || itemstack.getUseAction() == UseAction.DRINK;
-        if (entity.isEating() && drinkingoreating) {
+        if (entity.isEating() && drinkingoreating || entity.getItemInUseCount() > 0 && drinkingoreating && entity.getActiveHand() == hand) {
             this.bipedRightArm.rotateAngleY = -0.5F;
             this.bipedRightArm.rotateAngleX = -1.3F;
             this.bipedRightArm.rotateAngleZ = MathHelper.cos(ageInTicks) * 0.1F;
@@ -110,7 +110,7 @@ public class GuardModel extends BipedModel<GuardEntity> {
     public void eatingAnimationLeftHand(Hand hand, GuardEntity entity, float ageInTicks) {
         ItemStack itemstack = entity.getHeldItem(hand);
         boolean drinkingoreating = itemstack.getUseAction() == UseAction.EAT || itemstack.getUseAction() == UseAction.DRINK;
-        if (entity.isEating() && drinkingoreating) {
+        if (entity.isEating() && drinkingoreating || entity.getItemInUseCount() > 0 && drinkingoreating && entity.getActiveHand() == hand) {
             this.bipedLeftArm.rotateAngleY = 0.5F;
             this.bipedLeftArm.rotateAngleX = -1.3F;
             this.bipedLeftArm.rotateAngleZ = MathHelper.cos(ageInTicks) * 0.1F;

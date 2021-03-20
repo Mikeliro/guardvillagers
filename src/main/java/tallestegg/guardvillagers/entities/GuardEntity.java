@@ -117,7 +117,8 @@ import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.ai.goals.ArmorerRepairGuardArmorGoal;
 import tallestegg.guardvillagers.entities.ai.goals.FollowShieldGuards;
 import tallestegg.guardvillagers.entities.ai.goals.GuardEatFoodGoal;
-import tallestegg.guardvillagers.entities.ai.goals.GuardFindCoverGoal;
+import tallestegg.guardvillagers.entities.ai.goals.GuardRunToEatGoal;
+import tallestegg.guardvillagers.entities.ai.goals.GuardSetRunningToEatGoal;
 import tallestegg.guardvillagers.entities.ai.goals.HeroHurtByTargetGoal;
 import tallestegg.guardvillagers.entities.ai.goals.HeroHurtTargetGoal;
 import tallestegg.guardvillagers.entities.ai.goals.KickGoal;
@@ -134,6 +135,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     private static final DataParameter<BlockPos> GUARD_POS = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BLOCK_POS);
     private static final DataParameter<Boolean> PATROLLING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Integer> GUARD_VARIANT = EntityDataManager.createKey(GuardEntity.class, DataSerializers.VARINT);
+    private static final DataParameter<Boolean> RUNNING_TO_EAT = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> DATA_CHARGING_STATE = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> EATING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Boolean> KICKING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
@@ -472,9 +474,14 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         super.resetActiveHand();
     }
 
-    public void disableShield(boolean p_190777_1_) {
+    @Override
+    public void setAttackTarget(LivingEntity target) {
+        super.setAttackTarget(target);
+    }
+
+    public void disableShield(boolean increase) {
         float f = 0.25F + (float) EnchantmentHelper.getEfficiencyModifier(this) * 0.05F;
-        if (p_190777_1_) {
+        if (increase) {
             f += 0.75F;
         }
         if (this.rand.nextFloat() < f) {
@@ -495,6 +502,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.dataManager.register(FOLLOWING, false);
         this.dataManager.register(GUARD_POS, BlockPos.ZERO);
         this.dataManager.register(PATROLLING, false);
+        this.dataManager.register(RUNNING_TO_EAT, false);
     }
 
     public boolean isCharging() {
@@ -552,7 +560,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.goalSelector.addGoal(0, new KickGoal(this));
         this.goalSelector.addGoal(0, new GuardEatFoodGoal(this));
         this.goalSelector.addGoal(0, new RaiseShieldGoal(this));
-        this.goalSelector.addGoal(1, new GuardFindCoverGoal(this, 1.0D));
+        this.goalSelector.addGoal(1, new GuardRunToEatGoal(this));
+        this.goalSelector.addGoal(1, new GuardSetRunningToEatGoal(this, 1.0D));
         this.goalSelector.addGoal(2, new RangedCrossbowAttackPassiveGoal<>(this, 1.0D, 8.0F));
         this.goalSelector.addGoal(2, new RangedBowAttackPassiveGoal<>(this, 0.5D, 20, 15.0F));
         this.goalSelector.addGoal(2, new GuardEntity.GuardMeleeGoal(this, 0.8D, true));
@@ -664,7 +673,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     public int getKickTicks() {
         return this.kickTicks;
     }
-    
+
     @Override
     public void travel(Vector3d travelVector) {
         if (!this.interacting)
@@ -839,11 +848,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             witchentity.copyLocationAndAnglesFrom(this);
             witchentity.onInitialSpawn(p_241841_1_, p_241841_1_.getDifficultyForLocation(witchentity.getPosition()), SpawnReason.CONVERSION, null, null);
             witchentity.setNoAI(this.isAIDisabled());
-            if (this.hasCustomName()) {
-                witchentity.setCustomName(this.getCustomName());
-                witchentity.setCustomNameVisible(this.isCustomNameVisible());
-            }
-
+            witchentity.setCustomName(this.getCustomName());
+            witchentity.setCustomNameVisible(this.isCustomNameVisible());
             witchentity.enablePersistence();
             p_241841_1_.func_242417_l(witchentity);
             this.remove();
@@ -917,6 +923,14 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     public void setPatrolling(boolean patrolling) {
         this.dataManager.set(PATROLLING, patrolling);
+    }
+
+    public boolean isRunningToEat() {
+        return this.dataManager.get(RUNNING_TO_EAT);
+    }
+
+    public void setRunningToEat(boolean running) {
+        this.dataManager.set(RUNNING_TO_EAT, running);
     }
 
     public static class GuardData implements ILivingEntityData {
