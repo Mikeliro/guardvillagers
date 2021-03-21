@@ -755,10 +755,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     protected ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
         boolean configValues = !GuardConfig.giveGuardStuffHOTV || !GuardConfig.setGuardPatrolHotv || player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.giveGuardStuffHOTV || player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.setGuardPatrolHotv
                 || player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.giveGuardStuffHOTV && GuardConfig.setGuardPatrolHotv;
-        boolean inventoryRequirements = !player.isCrouching() && this.isServerWorld() && this.getAttackTarget() != player && this.onGround;
+        boolean inventoryRequirements = !player.isCrouching() && this.onGround;
         if (configValues && inventoryRequirements) {
-            this.openGui((ServerPlayerEntity) player);
-            return ActionResultType.func_233537_a_(this.world.isRemote);
+            if (player instanceof ServerPlayerEntity && this.getAttackTarget() != player) {
+                this.openGui((ServerPlayerEntity) player);
+                return ActionResultType.func_233537_a_(this.world.isRemote);
+            }
         }
         boolean sucess = this.getAttackTarget() != player && this.isServerWorld() && !player.isCrouching() && this.onGround;
         return sucess ? ActionResultType.SUCCESS : super.func_230254_b_(player, hand);
