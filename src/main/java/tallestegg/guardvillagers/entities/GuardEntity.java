@@ -268,6 +268,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.interacting = compound.getBoolean("Interacting");
         this.setEating(compound.getBoolean("Eating"));
         this.setPatrolling(compound.getBoolean("Patrolling"));
+        this.setRunningToEat(compound.getBoolean("RunningToEat"));
         this.shieldCoolDown = compound.getInt("KickCooldown");
         this.kickCoolDown = compound.getInt("ShieldCooldown");
         ListNBT listnbt = compound.getList("Inventory", 10);
@@ -304,6 +305,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         compound.putBoolean("Interacting", this.interacting);
         compound.putBoolean("Eating", this.isEating());
         compound.putBoolean("Patrolling", this.isPatrolling());
+        compound.putBoolean("RunningToEat", this.isRunningToEat());
         if (this.getOwnerId() != null) {
             compound.putUniqueId("Owner", this.getOwnerId());
         }

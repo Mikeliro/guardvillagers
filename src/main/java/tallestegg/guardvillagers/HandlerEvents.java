@@ -62,6 +62,7 @@ public class HandlerEvents {
         boolean isGolem = isVillager || entity.getType() == EntityType.IRON_GOLEM;
         if (isGolem && trueSource.getType() == GuardEntityType.GUARD.get() && !GuardConfig.guardArrowsHurtVillagers) {
             event.setAmount(0.0F);
+            event.setCanceled(true);
         }
         if (isVillager && event.getSource().getTrueSource() instanceof MobEntity) {
             List<MobEntity> list = trueSource.world.getEntitiesWithinAABB(MobEntity.class, trueSource.getBoundingBox().grow(GuardConfig.GuardVillagerHelpRange, 5.0D, GuardConfig.GuardVillagerHelpRange));

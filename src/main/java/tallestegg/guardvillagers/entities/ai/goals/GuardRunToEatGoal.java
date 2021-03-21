@@ -14,6 +14,7 @@ import tallestegg.guardvillagers.entities.GuardEntity;
 public class GuardRunToEatGoal extends RandomWalkingGoal {
     private final GuardEntity guard;
     private int walkTimer;
+    private boolean startedRunning;
 
     public GuardRunToEatGoal(GuardEntity guard) {
         super(guard, 1.0D);
@@ -29,8 +30,10 @@ public class GuardRunToEatGoal extends RandomWalkingGoal {
     @Override
     public void startExecuting() {
         super.startExecuting();
-        if (this.walkTimer <= 0)
-            this.walkTimer = 10;
+        if (this.walkTimer <= 0 && !startedRunning) {
+            this.walkTimer = 20;
+            startedRunning = true;
+        }
     }
 
     @Override
@@ -38,9 +41,19 @@ public class GuardRunToEatGoal extends RandomWalkingGoal {
         if (--walkTimer <= 0 && guard.isRunningToEat()) {
             this.guard.setRunningToEat(false);
             this.guard.setEating(true);
-            if (guard.isEating())
-                this.guard.setEating(false);
+            startedRunning = false;
             this.guard.getNavigator().clearPath();
+        }
+        List<LivingEntity> list = this.guard.world.getEntitiesWithinAABB(LivingEntity.class, this.guard.getBoundingBox().grow(5.0D, 3.0D, 5.0D));
+        if (!list.isEmpty()) {
+            for (LivingEntity mob : list) {
+                if (mob != null) {
+                    if (mob.getLastAttackedEntity() instanceof GuardEntity || mob instanceof MobEntity && ((MobEntity) mob).getAttackTarget() instanceof GuardEntity) {
+                        if (walkTimer < 20)
+                            this.walkTimer += 5;
+                    }
+                }
+            }
         }
     }
 
@@ -61,6 +74,6 @@ public class GuardRunToEatGoal extends RandomWalkingGoal {
 
     @Override
     public boolean shouldContinueExecuting() {
-        return super.shouldContinueExecuting() && this.walkTimer > 0 && this.guard.isRunningToEat() && !guard.isEating();
+        return super.shouldContinueExecuting() && this.walkTimer > 0 && this.guard.isRunningToEat() && !guard.isEating() && startedRunning;
     }
 }
