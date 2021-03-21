@@ -1031,7 +1031,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     }
 
     public class GuardMeleeGoal extends MeleeAttackGoal {
-
         public final GuardEntity guard;
 
         public GuardMeleeGoal(GuardEntity guard, double speedIn, boolean useLongMemory) {
@@ -1053,13 +1052,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         public void tick() {
             LivingEntity target = guard.getAttackTarget();
             if (target != null) {
-                if (target.getDistance(guard) <= 3.0D && !guard.getHeldItemOffhand().isShield(guard)) {
+                if (target.getDistance(guard) <= 3.0D && !guard.isActiveItemStackBlocking()) {
                     guard.getMoveHelper().strafe(-2.0F, 0.0F);
                     guard.faceEntity(target, 30.0F, 30.0F);
                 }
-                if (path != null && target.getDistance(guard) <= 2.0D) {
+                if (path != null && target.getDistance(guard) <= 2.0D)
                     guard.getNavigator().clearPath();
-                }
                 super.tick();
             }
         }
