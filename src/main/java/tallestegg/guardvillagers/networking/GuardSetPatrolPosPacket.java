@@ -52,7 +52,8 @@ public class GuardSetPatrolPosPacket {
                             if (entity instanceof GuardEntity) {
                                 GuardEntity guard = (GuardEntity) entity;
                                 BlockPos pos = msg.isPressed() ? null : guard.getPosition();
-                                guard.setPatrolPos(pos);
+                                if (guard.getPosition() != null)
+                                    guard.setPatrolPos(pos);
                                 guard.setPatrolling(!msg.isPressed());
                                 msg.setPressed(!msg.isPressed());
                             }

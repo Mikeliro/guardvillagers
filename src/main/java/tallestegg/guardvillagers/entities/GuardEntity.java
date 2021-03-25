@@ -132,7 +132,7 @@ import tallestegg.guardvillagers.networking.GuardOpenInventoryPacket;
 public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRangedAttackMob, IAngerable, IInventoryChangedListener {
     private static final UUID MODIFIER_UUID = UUID.fromString("5CD17E52-A79A-43D3-A529-90FDE04B181E");
     private static final AttributeModifier USE_ITEM_SPEED_PENALTY = new AttributeModifier(MODIFIER_UUID, "Use item speed penalty", -0.25D, AttributeModifier.Operation.ADDITION);
-    private static final DataParameter<BlockPos> GUARD_POS = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BLOCK_POS);
+    private static final DataParameter<Optional<BlockPos>> GUARD_POS = EntityDataManager.createKey(GuardEntity.class, DataSerializers.OPTIONAL_BLOCK_POS);
     private static final DataParameter<Boolean> PATROLLING = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
     private static final DataParameter<Integer> GUARD_VARIANT = EntityDataManager.createKey(GuardEntity.class, DataSerializers.VARINT);
     private static final DataParameter<Boolean> RUNNING_TO_EAT = EntityDataManager.createKey(GuardEntity.class, DataSerializers.BOOLEAN);
@@ -193,12 +193,14 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         super.collideWithEntity(entityIn);
     }
 
+    @Nullable
     public void setPatrolPos(BlockPos position) {
-        this.dataManager.set(GUARD_POS, position);
+        this.dataManager.set(GUARD_POS, Optional.ofNullable(position));
     }
 
+    @Nullable
     public BlockPos getPatrolPos() {
-        return this.dataManager.get(GUARD_POS);
+        return this.dataManager.get(GUARD_POS).orElse((BlockPos) null);
     }
 
     @Override
@@ -249,10 +251,6 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
 
     @Override
     public void readAdditional(CompoundNBT compound) {
-        int x = compound.getInt("PatrolPosX");
-        int y = compound.getInt("PatrolPosY");
-        int z = compound.getInt("PatrolPosZ");
-        this.setPatrolPos(new BlockPos(x, y, z));
         super.readAdditional(compound);
         UUID uuid = compound.hasUniqueId("Owner") ? compound.getUniqueId("Owner") : null;
         if (uuid != null) {
@@ -290,6 +288,12 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                 int handSlot = i == 0 ? 5 : 4;
                 this.guardInventory.setInventorySlotContents(handSlot, ItemStack.read(handItems.getCompound(i)));
             }
+        }
+        if (compound.contains("PatrolPosX")) {
+            int x = compound.getInt("PatrolPosX");
+            int y = compound.getInt("PatrolPosY");
+            int z = compound.getInt("PatrolPosZ");
+            this.dataManager.set(GUARD_POS, Optional.ofNullable(new BlockPos(x, y, z)));
         }
         if (!world.isRemote)
             this.readAngerNBT((ServerWorld) this.world, compound);
@@ -503,7 +507,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         this.dataManager.register(OWNER_UNIQUE_ID, Optional.empty());
         this.dataManager.register(EATING, false);
         this.dataManager.register(FOLLOWING, false);
-        this.dataManager.register(GUARD_POS, BlockPos.ZERO);
+        this.dataManager.register(GUARD_POS, Optional.empty());
         this.dataManager.register(PATROLLING, false);
         this.dataManager.register(RUNNING_TO_EAT, false);
     }
@@ -756,15 +760,17 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
     protected ActionResultType func_230254_b_(PlayerEntity player, Hand hand) {
         boolean configValues = !GuardConfig.giveGuardStuffHOTV || !GuardConfig.setGuardPatrolHotv || player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.giveGuardStuffHOTV || player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.setGuardPatrolHotv
                 || player.isPotionActive(Effects.HERO_OF_THE_VILLAGE) && GuardConfig.giveGuardStuffHOTV && GuardConfig.setGuardPatrolHotv;
-        boolean inventoryRequirements = !player.isCrouching() && this.onGround;
+        boolean inventoryRequirements = !player.isSecondaryUseActive() && this.onGround;
         if (configValues && inventoryRequirements) {
-            if (player instanceof ServerPlayerEntity && this.getAttackTarget() != player) {
-                this.openGui((ServerPlayerEntity) player);
-                return ActionResultType.SUCCESS;
+            if (this.getAttackTarget() != player && this.isServerWorld()) {
+                if (player instanceof ServerPlayerEntity) {
+                    this.openGui((ServerPlayerEntity) player);
+                    return ActionResultType.SUCCESS;
+                }
             }
+            return ActionResultType.CONSUME;
         }
-        boolean sucess = this.getAttackTarget() != player && this.isServerWorld() && !player.isCrouching() && this.onGround;
-        return sucess ? ActionResultType.SUCCESS : super.func_230254_b_(player, hand);
+        return super.func_230254_b_(player, hand);
     }
 
     @Override
