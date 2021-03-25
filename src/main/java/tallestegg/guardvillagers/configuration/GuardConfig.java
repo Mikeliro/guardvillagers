@@ -15,10 +15,19 @@ import tallestegg.guardvillagers.GuardVillagers;
 public class GuardConfig {
     public static final ForgeConfigSpec COMMON_SPEC;
     public static final CommonConfig COMMON;
+    public static final ForgeConfigSpec CLIENT_SPEC;
+    public static final ClientConfig CLIENT;
     static {
-        final Pair<CommonConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(CommonConfig::new);
-        COMMON_SPEC = specPair.getRight();
-        COMMON = specPair.getLeft();
+        {
+            final Pair<CommonConfig, ForgeConfigSpec> specPair = new ForgeConfigSpec.Builder().configure(CommonConfig::new);
+            COMMON = specPair.getLeft();
+            COMMON_SPEC = specPair.getRight();
+        }
+        {
+            final Pair<ClientConfig, ForgeConfigSpec> specPair1 = new ForgeConfigSpec.Builder().configure(ClientConfig::new);
+            CLIENT = specPair1.getLeft();
+            CLIENT_SPEC = specPair1.getRight();
+        }
     }
 
     public static boolean RaidAnimals;
@@ -44,9 +53,10 @@ public class GuardConfig {
     public static boolean armorerRepairGuardArmor;
     public static boolean giveGuardStuffHOTV;
     public static boolean setGuardPatrolHotv;
+    public static boolean guardSteve;
     public static List<String> MobBlackList;
 
-    public static void bakeConfig() {
+    public static void bakeCommonConfig() {
         RaidAnimals = COMMON.RaidAnimals.get();
         WitchesVillager = COMMON.WitchesVillager.get();
         IllusionerRaids = COMMON.IllusionerRaids.get();
@@ -73,10 +83,16 @@ public class GuardConfig {
 
     }
 
+    public static void bakeClientConfig() {
+        guardSteve = CLIENT.GuardSteve.get();
+    }
+
     @SubscribeEvent
     public static void onModConfigEvent(final ModConfig.ModConfigEvent configEvent) {
         if (configEvent.getConfig().getSpec() == GuardConfig.COMMON_SPEC) {
-            bakeConfig();
+            bakeCommonConfig();
+        } else if (configEvent.getConfig().getSpec() == GuardConfig.CLIENT_SPEC) {
+            bakeClientConfig();
         }
     }
 
@@ -134,6 +150,14 @@ public class GuardConfig {
             armorersRepairGuardArmor = builder.translation(GuardVillagers.MODID + ".config.armorvillager").define("Allow armorers and weaponsmiths repair guard items when down below half durability?", true);
             giveGuardStuffHOTV = builder.translation(GuardVillagers.MODID + ".config.hotvArmor").define("Allow players to give guards stuff only if they have the hero of the village effect?", true);
             setGuardPatrolHotv = builder.translation(GuardVillagers.MODID + ".config.hotvPatrolPoint").define("Allow players to set guard patrol points only if they have hero of the village", true);
+        }
+    }
+
+    public static class ClientConfig {
+        public final ForgeConfigSpec.BooleanValue GuardSteve;
+
+        public ClientConfig(ForgeConfigSpec.Builder builder) {
+            GuardSteve = builder.comment("Textures not included, make your own textures by making a resource pack that adds guard_steve_0 - 6").translation(GuardVillagers.MODID + ".config.steveModel").define("Have guards use the steve model?", false);
         }
     }
 }

@@ -19,6 +19,7 @@ import net.minecraftforge.fml.event.lifecycle.InterModEnqueueEvent;
 import net.minecraftforge.fml.event.lifecycle.InterModProcessEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import tallestegg.guardvillagers.client.renderer.GuardRenderer;
+import tallestegg.guardvillagers.client.renderer.GuardSteveRenderer;
 import tallestegg.guardvillagers.configuration.GuardConfig;
 import tallestegg.guardvillagers.entities.GuardEntity;
 import tallestegg.guardvillagers.items.DeferredSpawnEggItem;
@@ -33,6 +34,7 @@ public class GuardVillagers {
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::processIMC);
         FMLJavaModLoadingContext.get().getModEventBus().addListener(this::doClientStuff);
         ModLoadingContext.get().registerConfig(ModConfig.Type.COMMON, GuardConfig.COMMON_SPEC);
+        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, GuardConfig.CLIENT_SPEC);
         MinecraftForge.EVENT_BUS.register(this);
         GuardEntityType.ENTITIES.register(FMLJavaModLoadingContext.get().getModEventBus());
         GuardItems.ITEMS.register(FMLJavaModLoadingContext.get().getModEventBus());
@@ -51,7 +53,11 @@ public class GuardVillagers {
     }
 
     private void doClientStuff(final FMLClientSetupEvent event) {
-        RenderingRegistry.registerEntityRenderingHandler(GuardEntityType.GUARD.get(), GuardRenderer::new);
+        if (GuardConfig.guardSteve) {
+            RenderingRegistry.registerEntityRenderingHandler(GuardEntityType.GUARD.get(), GuardSteveRenderer::new);
+        } else {
+            RenderingRegistry.registerEntityRenderingHandler(GuardEntityType.GUARD.get(), GuardRenderer::new);
+        }
     }
 
     private void enqueueIMC(final InterModEnqueueEvent event) {
