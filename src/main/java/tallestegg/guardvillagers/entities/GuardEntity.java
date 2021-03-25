@@ -291,7 +291,8 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
                 this.guardInventory.setInventorySlotContents(handSlot, ItemStack.read(handItems.getCompound(i)));
             }
         }
-        this.readAngerNBT((ServerWorld) this.world, compound);
+        if (!world.isRemote)
+            this.readAngerNBT((ServerWorld) this.world, compound);
     }
 
     @Override
@@ -759,7 +760,7 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
         if (configValues && inventoryRequirements) {
             if (player instanceof ServerPlayerEntity && this.getAttackTarget() != player) {
                 this.openGui((ServerPlayerEntity) player);
-                return ActionResultType.func_233537_a_(this.world.isRemote);
+                return ActionResultType.SUCCESS;
             }
         }
         boolean sucess = this.getAttackTarget() != player && this.isServerWorld() && !player.isCrouching() && this.onGround;
@@ -1074,12 +1075,11 @@ public class GuardEntity extends CreatureEntity implements ICrossbowUser, IRange
             double d0 = this.getAttackReachSqr(enemy);
             if (distToEnemySqr <= d0 && this.field_234037_i_ <= 0) {
                 this.func_234039_g_();
+                this.guard.resetActiveHand();
+                if (guard.shieldCoolDown == 0)
+                    this.guard.shieldCoolDown = 8;
                 this.guard.swingArm(Hand.MAIN_HAND);
                 this.guard.attackEntityAsMob(enemy);
-                this.guard.resetActiveHand();
-                if (guard.shieldCoolDown == 0) {
-                    this.guard.shieldCoolDown = 8;
-                }
             }
         }
     }
